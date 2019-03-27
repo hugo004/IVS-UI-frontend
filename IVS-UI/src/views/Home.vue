@@ -88,13 +88,26 @@
       </v-flex>
     </v-layout>
 
-    <v-dialog v-model="upload" >
-      <ivs-upload-record />
+    <v-dialog v-model="upload">
+      <v-card>
+        <ivs-upload-record @save="saveRecord"/>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn 
+            flat 
+            color="secondary"
+            @click="upload=false"
+          >
+            close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
     </v-dialog>
   </v-container>
 </template>
 
 <script>
+import { CreateRecord } from "@/api/record.js";
 export default {
   data () {
     return {
@@ -151,12 +164,16 @@ export default {
           city: 'Feldkirchen in Kārnten',
           salary: '$63,542'
         }
-      ],
+      ]
 
     }
   },
-  methods: {
 
+  methods: {
+    saveRecord(record)
+    {
+      console.log(record);
+    }
   }
 }
 </script>

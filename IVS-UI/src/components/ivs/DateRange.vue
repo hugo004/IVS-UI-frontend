@@ -1,6 +1,6 @@
 <template>
     <v-layout row wrap>
-        <v-flex xs12>
+        <v-flex xs>
             <v-menu
                 ref="menuSD"
                 v-model="menu1"
@@ -14,7 +14,7 @@
                 <template v-slot:activator="{ on }">
                 <v-text-field
                     v-model="start_date"
-                    :label="label"
+                    :label="labelStartDate"
                     append-icon="event"
                     readonly
                     v-on="on"
@@ -29,6 +29,35 @@
                 </v-date-picker>
             </v-menu>
         </v-flex>
+        <v-flex xs12>
+            <v-menu
+                ref="menuED"
+                v-model="menu2"
+                :close-on-content-click="false"
+                :return-value.sync="end_date"
+                transition="scale-transition"
+                offset-y
+                full-width
+                min-width="290px"
+            >
+                <template v-slot:activator="{ on }">
+                <v-text-field
+                    v-model="end_date"
+                    :label="labelEndDate"
+                    append-icon="event"
+                    readonly
+                    v-on="on"
+                    required
+                    :rules="[v => !!v || 'required']"
+                ></v-text-field>
+                </template>
+                <v-date-picker v-model="end_date" :min="start_date" no-title>
+                    <v-spacer></v-spacer>
+                    <v-btn flat color="primary" @click="menu2 = false">Cancel</v-btn>
+                    <v-btn flat color="primary" @click="$refs.menuED.save(end_date)">OK</v-btn>
+                </v-date-picker>
+            </v-menu>
+        </v-flex>
     </v-layout>
 </template>
 
@@ -38,7 +67,8 @@ export default {
     {
         startDate: String,
         endDate: String,
-        label: String
+        labelStartDate: String,
+        labelEndDate: String
     },
 
     data()
@@ -48,6 +78,7 @@ export default {
             menu2: false,
 
             start_date: this.startDate || new Date().toISOString().substr(0,10),
+            end_date: this.endDate,
             search: "",
             selected: [
                 {name: "+1 Day", value: 1},
@@ -74,6 +105,11 @@ export default {
         {
             this.$emit('update:startDate',val);
         },
+
+        end_date(val)
+        {
+            this.$emit('update:endDate',val);
+        }
 
 
     },
