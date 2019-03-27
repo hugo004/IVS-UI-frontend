@@ -10,32 +10,45 @@
       :full-width="fullWidth"
       :offset="offset"
     >
-      <v-card
-        v-if="!$slots.offset"
-        :color="color"
-        :class="`elevation-${elevation}`"
-        class="v-card--material__header"
-        dark
-      >
+      <slot name="content">
+        <v-card
+          v-if="!$slots.offset"
+          :color="color"
+          :class="`elevation-${elevation}`"
+          class="v-card--material__header"
+          dark
+        >
+          <slot
+            v-if="!title && !text"
+            name="header"
+          />
+          <v-layout 
+            v-else
+            align-center
+          >
+            <v-flex>
+              <h4
+                class="title font-weight-light mb-2"
+                v-text="title"
+              />
+              <p
+                class="category font-weight-light"
+                v-text="text"
+              />
+            </v-flex>
+            <v-flex
+              xs4
+              class="text-xs-right"
+            >
+              <slot name="header-actions" />
+            </v-flex>
+          </v-layout>
+        </v-card>
         <slot
-          v-if="!title && !text"
-          name="header"
+          v-else
+          name="offset"
         />
-        <span v-else>
-          <h4
-            class="title font-weight-light mb-2"
-            v-text="title"
-          />
-          <p
-            class="category font-weight-thin"
-            v-text="text"
-          />
-        </span>
-      </v-card>
-      <slot
-        v-else
-        name="offset"
-      />
+      </slot>
     </helper-offset>
 
     <v-card-text>

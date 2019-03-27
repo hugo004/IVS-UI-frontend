@@ -9,7 +9,7 @@
     offset-x
     transition="slide-y-transition"
   >
-    <v-btn
+    <!-- <v-btn
       slot="activator"
       class="elevation-0"
       color="grey"
@@ -20,7 +20,7 @@
       top
     >
       <v-icon>mdi-settings</v-icon>
-    </v-btn>
+    </v-btn> -->
     <v-card>
       <v-container grid-list-xl>
         <v-layout wrap>
@@ -58,7 +58,6 @@
           </v-flex>
           <v-flex xs12>
             <v-btn
-              href="https://www.creative-tim.com/product/vuetify-material-dashboard"
               target="_blank"
               color="success"
               block
@@ -68,7 +67,6 @@
           </v-flex>
           <v-flex xs12>
             <v-btn
-              href="https://demos.creative-tim.com/vuetify-material-dashboard/documentation"
               target="_blank"
               class="white--text"
               color="primary"

@@ -10,6 +10,10 @@ export default [
     view: 'Dashboard'
   },
   {
+    path: '/home',
+    view: 'Home'
+  },
+  {
     path: '/user-profile',
     name: 'User Profile',
     view: 'UserProfile'
