@@ -53,8 +53,10 @@
         <div>
             <ivs-education 
                 class="grey lighten-5 my-4 pa-2"
-                v-for="(field,index) in educations"
+                v-for="(field,index) in record.educations"
                 :key="index"
+                :field.sync="field"
+                @delete="removeField(field, record.educations)"
             ></ivs-education>
         </div>
         <v-btn color="secondary" @click="currStep = 1">Previous</v-btn>
@@ -73,8 +75,10 @@
         <div>
             <ivs-work-experience
                 class="grey lighten-5 my-4 pa-2"
-                v-for="(field,index) in workExps"
+                v-for="(field,index) in record.workExps"
                 :key="index"
+                :field.sync="field"
+                @delete="removeField(field, record.workExps)"
             ></ivs-work-experience>
         </div>
         <v-btn color="secondary" @click="currStep = 2">Previous</v-btn>
@@ -103,8 +107,8 @@ export default {
                 phone: "",
                 email: "",
                 location: "",
-                institution: "",
-                workExperience: [],
+                educations: [],
+                workExps: [],
                 workSkills: [] 
             },
 
@@ -115,9 +119,6 @@ export default {
                 duty: ""
             },
 
-            educations: [],
-            workExps: []
-
         }
     },
 
@@ -125,18 +126,41 @@ export default {
     {
         saveRecord()
         {
-            let obj = {};
-            this.$emit("saveRecord", obj);
+            if (this.currStep >= 4)
+            {
+                let obj = {};
+                this.$emit("saveRecord", obj);
+                console.log(this.record);
+            }
+
         },
 
         addEducations()
         {
-            this.educations.push('');
+            let obj = {
+                institution: "",
+                qualify: "",
+                from: "",
+                to: ""
+            };
+            this.record.educations.push(obj);
         },
 
         addWorkExps()
         {
-            this.workExps.push('');
+            let obj = {
+                title: "",
+                duty: "",
+                from: "",
+                to: ""
+            };
+            this.record.workExps.push(obj);
+        },
+
+        removeField(field, from = [])
+        {
+            let index = from.indexOf(field);
+            from.splice(index, 1);
         }
     }
 }

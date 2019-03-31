@@ -1,9 +1,10 @@
 <template>
-  <v-container
-    fluid
-    grid-list-xl
-    fill-height>
-    <v-layout
+<v-container 
+  fluid 
+  grid-list-xl 
+  fill-height
+>
+  <!-- <v-layout
       justify-center
       align-center
     >
@@ -227,30 +228,157 @@
           </v-card-text>
         </material-card>
       </v-flex>
-    </v-layout>
-  </v-container>
+    </v-layout> -->
+  <v-layout 
+    justify-center 
+    fill-height
+    row
+    wrap
+  >
+    <v-flex xs12>
+      <material-card 
+        title="Notifications"
+        text="Last updated at xxx"
+      >        
+        <v-btn
+          slot="header-actions" 
+          dark
+          flat
+        >
+          <v-icon>refresh</v-icon>
+          <span class="heading px-1">Refresh</span>
+        </v-btn>
+
+        <v-data-table 
+          :headers="tableHeaders" 
+          :items="tableItems"
+        >
+          <template v-slot:headerCell="{ header }" >
+            <span
+              class="subheading font-weight-light text-success"
+              v-text="header.text"
+            />
+          </template>
+          <template v-slot:items="props">
+            <tr>
+              <td class="text-xs-left">{{ props.item.event }}</td>
+              <td class="text-xs-left">{{ props.item.from }}</td>
+              <td class="text-xs-left">{{ displayDateTime(props.item.date) }}</td>
+              <td class="text-xs-left">{{ props.item.status }}</td>
+              <td class="text-xs-left">{{ props.item.remarks }}</td>
+              <td 
+                v-if="isUndetermined(props.item.status)"
+                class="text-xs-right"
+              >
+                <v-btn
+                  round
+                  color="green"
+                  dark
+                >
+                  Accept
+                </v-btn>
+                <v-btn
+                  round
+                  dark
+                  color="grey"
+                >
+                  Deline
+                </v-btn>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </material-card>
+    </v-flex>
+  </v-layout>
+</v-container>
 </template>
 
 <script>
 export default {
-  data: () => ({
-    color: null,
-    colors: [
-      'purple',
-      'info',
-      'success',
-      'warning',
-      'error'
-    ],
-    top: true,
-    bottom: false,
-    left: false,
-    right: false,
-    snackbar: false
-  }),
 
-  methods: {
-    snack (...args) {
+  data() 
+  {
+    return {
+      color: null,
+      colors: [
+        'purple',
+        'info',
+        'success',
+        'warning',
+        'error'
+      ],
+      top: true,
+      bottom: false,
+      left: false,
+      right: false,
+      snackbar: false,
+
+      tableHeaders: [{
+          text: 'Event',
+          align: 'left',
+          sortable: false,
+          value: 'new_event_icon'
+        },
+        {
+          text: 'From',
+          align: 'left',
+          sortable: false,
+          value: 'from'
+        },
+        {
+          text: 'Date',
+          align: 'left',
+          sortable: false,
+          value: 'date'
+        },
+        {
+          text: 'Status',
+          align: 'left',
+          sortable: false,
+          value: 'status'
+        },
+        {
+          text: 'Remarks',
+          align: 'left',
+          sortable: false,
+          value: 'remarks'
+        },
+        {
+          text: '',
+          align: 'left',
+          sortable: false,
+          value: 'actions'
+        },
+      ],
+      tableItems: [{
+          event: "Channel Invation",
+          from: "Hugo",
+          date: new Date("2019-02-02, 19:00"),
+          status: "undetermined",
+          remarks: ""
+        },
+        {
+          event: "Channel Invation",
+          from: "Hugo",
+          date: new Date("2019-02-02, 19:00"),
+          status: "accept",
+          remarks: ""
+        },
+        {
+          event: "Channel Invation",
+          from: "Hugo",
+          date: new Date("2019-02-02, 19:00"),
+          status: "denied",
+          remarks: ""
+        },
+      ]
+    }
+  },
+
+  methods: 
+  {
+    snack(...args) {
       this.top = false
       this.bottom = false
       this.left = false
@@ -263,6 +391,24 @@ export default {
       this.color = this.colors[Math.floor(Math.random() * this.colors.length)]
 
       this.snackbar = true
+    },
+
+    isUndetermined(status)
+    {
+      if (status == "undetermined")
+      {
+        return true;
+      }
+
+      return false;
+    },
+
+    displayDateTime(date)
+    {
+      return (
+        date.toLocaleString() ||
+        ""
+      );
     }
   }
 }

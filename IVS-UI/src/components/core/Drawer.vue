@@ -51,7 +51,7 @@
           class="v-list-item"
         >
           <v-list-tile-action>
-            <v-icon>{{ link.icon }}</v-icon>
+            <v-icon size="25">{{ link.icon }}</v-icon>
           </v-list-tile-action>
           <v-list-tile-title
             v-text="link.text"
@@ -107,6 +107,16 @@ export default {
         to: '/notifications',
         icon: 'mdi-bell',
         text: 'Notifications'
+      },
+      {
+        to: '/channelManagement',
+        icon: 'fas fa-users',
+        text: 'Channel Group'
+      },
+      {
+        to: '/recordPermissions',
+        icon: 'fas fa-user-lock',
+        text: 'Record Permissions'
       }
     ],
     responsive: false

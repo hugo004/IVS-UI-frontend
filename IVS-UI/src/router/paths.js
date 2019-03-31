@@ -4,13 +4,13 @@
  * official documentation https://router.vuejs.org/en/
  */
 export default [
+  // {
+  //   path: '/dashboard',
+  //   // Relative to /src/views
+  //   view: 'Dashboard'
+  // },
   {
     path: '/dashboard',
-    // Relative to /src/views
-    view: 'Dashboard'
-  },
-  {
-    path: '/home',
     view: 'Home'
   },
   {
@@ -43,5 +43,15 @@ export default [
     path: '/upgrade',
     name: 'Upgrade to PRO',
     view: 'Upgrade'
+  },
+  {
+    path: '/channelManagement',
+    name: 'Channel Group Management',
+    view: 'ChannelManagement'
+  },
+  {
+    path: '/recordPermissions',
+    name: 'Record Permissions Setting',
+    view: 'RecordPermissions'
   }
 ]

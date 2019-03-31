@@ -17,15 +17,21 @@
                     <ivs-date-range
                         labelStartDate="From" 
                         labelEndDate="To"
-                        :startDate.sync="start_date"
-                        :endDate.sync="end_date"
+                        :startDate.sync="local_field.from"
+                        :endDate.sync="local_field.to"
                     ></ivs-date-range>
                 </v-flex>
                 <v-flex xs12>
-                    <v-text-field label="Job title"></v-text-field>
+                    <v-text-field 
+                        label="Job title"
+                        v-model="local_field.title"
+                    ></v-text-field>
                 </v-flex>
                 <v-flex xs12>
-                    <v-textarea label="Job Duty"></v-textarea>
+                    <v-textarea 
+                        label="Job Duty"
+                        v-model="local_field.duty"
+                    ></v-textarea>
                 </v-flex>
             </v-layout>
         </v-card-text>
@@ -36,28 +42,26 @@
 export default {
     props:
     {
-        startDate: String,
-        endDate: String
+        field: Object
     },
 
     data()
     {
         return {
-            start_date: this.startDate,
-            end_date: this.endDate
+            local_field: this.field
         }
     },
 
     watch:
     {
-        start_date(val)
-        {
-            this.$emit('update:startDate',val);
-        },
 
-        end_date(val)
+        local_field:
         {
-            this.$emit('update:endDate',val);
+            deep: true,
+            handler(val)
+            {
+                this.$emit('update:field', val);
+            }
         }
     }
 };

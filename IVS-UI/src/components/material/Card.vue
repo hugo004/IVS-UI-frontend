@@ -32,7 +32,7 @@
                 v-text="title"
               />
               <p
-                class="category font-weight-light"
+                class="category font-weight-regular"
                 v-text="text"
               />
             </v-flex>

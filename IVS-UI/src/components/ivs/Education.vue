@@ -16,14 +16,14 @@
                 <v-flex xs12>
                     <v-text-field 
                         label="Institution"
-                        v-model="local_institu"
+                        v-model="local_field.institution"
                     ></v-text-field>
                 </v-flex>
                 <v-flex xs12>
                     <v-textarea 
                         :rows="1" 
                         auto-grow
-                        v-model="local_qualify"
+                        v-model="local_field.qualify"
                         placeholder="e.g course title "
                     ></v-textarea>
                 </v-flex>
@@ -33,8 +33,8 @@
                     <ivs-date-range
                         labelStartDate="From" 
                         labelEndDate="To"
-                        :startDate.sync="start_date"
-                        :endDate.sync="end_date"
+                        :startDate.sync="local_field.from"
+                        :endDate.sync="local_field.to"
                     ></ivs-date-range>
                 </v-layout>
             </v-flex>
@@ -46,32 +46,25 @@
 export default {
     props:
     {
-        institution: String,
-        qualify: String,
-        startDate: String,
-        endDate: String
+        field: Object
     },
 
     data()
     {
         return {
-            local_institu: this.institution,
-            local_qualify: this.qualify,
-            start_date: this.startDate,
-            end_date: this.endDate
+            local_field: this.field,
         }
     },
 
     watch:
     {
-        start_date(val)
+        local_field:
         {
-            this.$emit('update:startDate',val);
-        },
-
-        end_date(val)
-        {
-            this.$emit('update:endDate',val);
+            deep: true,
+            handler(val)
+            {
+                this.$emit('update:field', val);
+            }
         }
     }
 }
