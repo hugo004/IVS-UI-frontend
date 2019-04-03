@@ -23,6 +23,7 @@
                     <v-textarea 
                         :rows="1" 
                         auto-grow
+                        label="Major"
                         v-model="local_field.qualify"
                         placeholder="e.g course title "
                     ></v-textarea>

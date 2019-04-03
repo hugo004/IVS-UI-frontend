@@ -88,7 +88,10 @@
       </v-flex>
     </v-layout>
 
-    <v-dialog v-model="upload">
+    <v-dialog 
+      v-model="upload"
+      persistent
+    >
       <v-card>
         <ivs-upload-record @save="saveRecord"/>
         <v-card-actions>

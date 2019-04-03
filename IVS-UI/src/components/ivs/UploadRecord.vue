@@ -97,6 +97,9 @@
 </template>
 
 <script>
+
+import { CreateRecord } from '@/api/record.js';
+
 export default {
     name: "UploadRecord",
     data() {
@@ -109,7 +112,7 @@ export default {
                 location: "",
                 educations: [],
                 workExps: [],
-                workSkills: [] 
+                workSkills: "" 
             },
 
             workExperience: {
@@ -124,15 +127,45 @@ export default {
 
     methods:
     {
-        saveRecord()
+        async saveRecord()
         {
             if (this.currStep >= 4)
             {
                 let obj = {};
                 this.$emit("saveRecord", obj);
                 console.log(this.record);
+
+                let user = {
+                    "firstName": this.record.name,
+                    "lastName": this.record.name,
+                    "email": this.record.email,
+                    "phone": this.record.phone,
+                    "location": this.record.location,
+                    "uid": this.UIDGenerator('u')
+                };
+
+                await CreateRecord({
+                    "user": user,
+                    "recordId": this.UIDGenerator('p'),
+                    "createTime": new Date().toISOString(),
+                    "educations": this.record.educations,
+                    "workExps": this.record.workExps,
+                    "workSkills": this.record.workSkills
+                });
+
             }
 
+        },
+
+        UIDGenerator(prefix, length=10)
+        {
+            var text = "";
+            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+            for (var i = 0; i < length; i++)
+                text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+            return `${prefix}-${text}`;
         },
 
         addEducations()
@@ -150,6 +183,7 @@ export default {
         {
             let obj = {
                 title: "",
+                company: "",
                 duty: "",
                 from: "",
                 to: ""

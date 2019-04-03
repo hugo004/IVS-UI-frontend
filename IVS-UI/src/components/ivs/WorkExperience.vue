@@ -22,6 +22,12 @@
                     ></ivs-date-range>
                 </v-flex>
                 <v-flex xs12>
+                    <v-text-field
+                        label="Company Name"
+                        v-model="local_field.company"
+                    ></v-text-field>
+                </v-flex>
+                <v-flex xs12>
                     <v-text-field 
                         label="Job title"
                         v-model="local_field.title"
