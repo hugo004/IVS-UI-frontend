@@ -24,19 +24,19 @@
                 <v-flex xs12>
                     <v-text-field
                         label="Company Name"
-                        v-model="local_field.company"
+                        v-model="local_field.name"
                     ></v-text-field>
                 </v-flex>
                 <v-flex xs12>
                     <v-text-field 
                         label="Job title"
-                        v-model="local_field.title"
+                        v-model="local_field.jobTitle"
                     ></v-text-field>
                 </v-flex>
                 <v-flex xs12>
                     <v-textarea 
                         label="Job Duty"
-                        v-model="local_field.duty"
+                        v-model="local_field.jobDuty"
                     ></v-textarea>
                 </v-flex>
             </v-layout>

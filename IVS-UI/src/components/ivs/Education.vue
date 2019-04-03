@@ -16,7 +16,7 @@
                 <v-flex xs12>
                     <v-text-field 
                         label="Institution"
-                        v-model="local_field.institution"
+                        v-model="local_field.name"
                     ></v-text-field>
                 </v-flex>
                 <v-flex xs12>
@@ -24,7 +24,7 @@
                         :rows="1" 
                         auto-grow
                         label="Major"
-                        v-model="local_field.qualify"
+                        v-model="local_field.major"
                         placeholder="e.g course title "
                     ></v-textarea>
                 </v-flex>

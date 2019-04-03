@@ -89,7 +89,11 @@
         Work Skills
     </v-stepper-step>
     <v-stepper-content step="4">
-        <v-textarea label="Skills" placeholder="e.g. computer skill, programming skill"></v-textarea>
+        <v-textarea 
+            v-model="record.workSkills"
+            label="Skills" 
+            placeholder="e.g. computer skill, programming skill"
+        />
         <v-btn color="secondary" @click="currStep = 3">Previous</v-btn>
         <v-btn color="primary" @click="saveRecord()">Create</v-btn>
     </v-stepper-content>
@@ -113,14 +117,7 @@ export default {
                 educations: [],
                 workExps: [],
                 workSkills: "" 
-            },
-
-            workExperience: {
-                from: "",
-                to: "",
-                title: "",
-                duty: ""
-            },
+            }
 
         }
     },
@@ -171,8 +168,8 @@ export default {
         addEducations()
         {
             let obj = {
-                institution: "",
-                qualify: "",
+                name: "",
+                major: "",
                 from: "",
                 to: ""
             };
@@ -182,9 +179,9 @@ export default {
         addWorkExps()
         {
             let obj = {
-                title: "",
-                company: "",
-                duty: "",
+                jobTitle: "",
+                name: "",
+                jobDuty: "",
                 from: "",
                 to: ""
             };

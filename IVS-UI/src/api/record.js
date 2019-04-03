@@ -1,5 +1,5 @@
-import axios from "@/api/httpRequest.js";
-// import axios from "axios"
+// import axios from "@/api/httpRequest.js";
+import axios from "axios"
 
 export const GetRecords = () => {
     return axios.request({
@@ -8,15 +8,14 @@ export const GetRecords = () => {
     });
 };
 
-export const CreateRecord = function({
+export const CreateRecord = ({
     user,
     recordId,
     createTime,
     educations,
     workExps,
     workSkills
-})
-{
+}) => {
 
     const data = {
         "user": user,
@@ -29,11 +28,11 @@ export const CreateRecord = function({
     };
 
 
-// return axios({
-//     method: 'post',
-//     url: 'http://localhost:3000/api/Record',
-//     data: data
-//   });
+return axios({
+    method: 'post',
+    url: 'http://localhost:3000/api/Record',
+    data: data
+  });
 
     return axios.request({
         url: '/Record',
