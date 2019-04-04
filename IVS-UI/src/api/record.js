@@ -28,12 +28,6 @@ export const CreateRecord = ({
     };
 
 
-return axios({
-    method: 'post',
-    url: 'http://localhost:3000/api/Record',
-    data: data
-  });
-
     return axios.request({
         url: '/Record',
         method: 'post',

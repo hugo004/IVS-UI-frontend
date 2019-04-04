@@ -118,7 +118,8 @@ class HttpRequest
         {
             option.headers.authorization = localStorage.getItem("token")
         }
-        const instance = this.create(option);
+        // const instance = this.create(option);
+        const instance = axios.create();
         this.interceptors(instance);
 
 
