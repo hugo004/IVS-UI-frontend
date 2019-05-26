@@ -10,6 +10,10 @@ export default [
   //   view: 'Dashboard'
   // },
   {
+    path: '/login',
+    view: 'Login'
+  },
+  {
     path: '/dashboard',
     view: 'Home'
   },

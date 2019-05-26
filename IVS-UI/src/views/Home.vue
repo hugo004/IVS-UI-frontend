@@ -5,44 +5,18 @@
     grid-list-xl
   >
     <v-layout wrap>
-      <v-flex
-        md12
-        sm12
-        lg4
-      >
-        <material-card
-          color="green"
-          title="Channal Group 1"
-          text = "Hugo, Lock"
-        >
-          <h3 class="title font-weight-light">Completed Tasks</h3>
-          <p class="category d-inline-flex font-weight-light">Last Last Campaign Performance</p>
-
-          <template slot="actions">
-            <v-icon
-              class="mr-2"
-              small
-            >
-              mdi-clock-outline
-            </v-icon>
-            <span class="caption grey--text font-weight-light">Join channel time</span>
-          </template>
-        </material-card>
-      </v-flex>
-      <v-flex
-        sm6
-        xs12
-        md6
-        lg3
-      >
-        <material-stats-card
-          color="green"
-          icon="mdi-store"
-          title="Revenue"
-          value="$34,245"
-          sub-icon="mdi-calendar"
-          sub-text="Last 24 Hours"
-        />
+      <v-flex xs12>
+        <v-layout row wrap>
+          <v-flex 
+            v-for="(channel,index) in channels"
+            :key="index"
+            sm4
+          >
+            <ivs-channel-card
+              :channel="channel"
+            ></ivs-channel-card>
+          </v-flex>
+        </v-layout>
       </v-flex>
       <v-flex  xs12>
         <material-card
@@ -110,7 +84,15 @@
 </template>
 
 <script>
-import { CreateRecord } from "@/api/record.js";
+import { 
+  CreateRecord,
+  GetRecords
+} from "@/api/record.js";
+
+import {
+  GetUserChannel
+} from '@/api/channel.js'
+
 export default {
   data () {
     return {
@@ -140,36 +122,34 @@ export default {
         }
       ],
       items: [
-        {
-          name: 'Dakota Rice',
-          country: 'Niger',
-          city: 'Oud-Tunrhout',
-          salary: '$35,738'
-        },
-        {
-          name: 'Minerva Hooper',
-          country: 'Curaçao',
-          city: 'Sinaai-Waas',
-          salary: '$23,738'
-        }, {
-          name: 'Sage Rodriguez',
-          country: 'Netherlands',
-          city: 'Overland Park',
-          salary: '$56,142'
-        }, {
-          name: 'Philip Chanley',
-          country: 'Korea, South',
-          city: 'Gloucester',
-          salary: '$38,735'
-        }, {
-          name: 'Doris Greene',
-          country: 'Malawi',
-          city: 'Feldkirchen in Kārnten',
-          salary: '$63,542'
-        }
-      ]
+
+      ],
+
+      channels: []
 
     }
+  },
+  
+  async mounted()
+  {
+
+    this.$store.commit('setLoading', true);
+    
+    this.channels = await GetUserChannel().then((result) => {
+      let integrated = [];
+      //repalce the channel's member property from string id to member info (string[] with object[])
+      result.forEach(e => {
+        let {channel, membersInfo} = e;
+        channel.members = membersInfo;
+        integrated.push(channel);
+      });
+      
+      this.$store.commit('setChannels', integrated);
+      return integrated;
+    });
+
+    this.$store.commit('setLoading', false);
+
   },
 
   methods: {

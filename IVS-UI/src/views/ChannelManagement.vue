@@ -19,16 +19,17 @@
           <span class="heading px-2">Create Channel</span>
         </v-btn>
       </v-flex>
-      <v-flex>
-        <v-layout
-          row
-          wrap
-        >
-          <ivs-channel-card
+      <v-flex xs12>
+        <v-layout row wrap>
+          <v-flex 
             v-for="(channel,index) in myChannels"
             :key="index"
-            :channel="channel"
-          ></ivs-channel-card>
+            sm4
+          >
+            <ivs-channel-card
+              :channel="channel"
+            ></ivs-channel-card>
+          </v-flex>
         </v-layout>
       </v-flex>
       <v-flex>
@@ -45,30 +46,115 @@
       </v-flex>
     </v-layout>
 
-    <v-dialog v-model="dialog">
-      <ivs-channel-create-form></ivs-channel-create-form>
+    <v-dialog 
+      v-model="dialog"
+      persistent
+      max-width="500"
+    >
+      <ivs-channel-create-form 
+        ref="form"
+        v-model="newChannelInfo"
+      >
+        <template slot="actions">
+          <v-spacer></v-spacer>
+          <v-btn 
+            color="primary"
+            :loading="createLoading"
+            @click="onChannelCreate()"
+          >
+            create
+          </v-btn>
+          <v-btn
+              outline
+              @click="onCancel()"
+            >
+              cancel
+          </v-btn>
+        </template>
+      </ivs-channel-create-form>
     </v-dialog>
 
   </v-container>
 </template>
 
 <script>
+
+import {
+  GetUserChannel,
+  CreateChannel
+} from '@/api/channel.js';
+
 export default {
+  name: 'ChannelManagement',
+
   data()
   {
     return {
       dialog: false,
+      createLoading: false,
+      
       tableHeaders: [],
       tableItems: [],
-      myChannels: [
-        {
-          name: "Dummy channel",
-          members: ["Hugo", "Lock"],
-          createDate: "2019-01-01",
-          joinDate: "2019-03-03",
-          owner: "Hugo"
-        }
-      ]
+      newChannelInfo: {
+        'name': '',
+        'members': []
+      }
+    }
+  },
+
+  async mounted() {
+    if (this.myChannels.length < 1) {
+      this.$store.commit('setLoading', true);
+      
+      await GetUserChannel().then((result) => {
+        let integrated = [];
+        //repalce the channel's member property from string id to member info (string[] with object[])
+        result.forEach(e => {
+          let {channel, membersInfo} = e;
+          channel.members = membersInfo;
+          integrated.push(channel);
+        });
+
+        this.$store.commit('setChannels', integrated);
+      });
+
+      this.$store.commit('setLoading', true);
+    }
+  },
+
+  computed: {
+    myChannels() {
+      return this.$store.state.myChannels;
+    }
+  },
+
+  methods: {
+    async onChannelCreate() {
+      if (this.$refs.form.validate()) {
+
+        // let name = this.newChannelInfo.name;
+        // let members = this.newChannelInfo.members;
+        const {name, members} = this.newChannelInfo;
+        
+        //call api and turn on loading effect
+        this.createLoading = true;
+
+        await CreateChannel({
+          'name': name,
+          'members': members
+        });
+
+        this.createLoading = false;
+        this.dialog = false;
+
+        //display message
+        this.$store.commit('setMeesage', 'Channel created');
+        this.$store.commit('showNotification', ['top', 'right']);
+      }
+    },
+
+    onCancel() {
+      this.dialog = false;
     }
   }
 

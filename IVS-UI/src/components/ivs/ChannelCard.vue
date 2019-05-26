@@ -14,7 +14,7 @@
         >
           mdi-clock-outline
         </v-icon>
-        <span class="caption grey--text font-weight-light">Join channel time: {{ channel.joinDate }}</span>
+        <span class="caption grey--text font-weight-light">Channel create time: {{ new Date(channel.createTime).toLocaleDateString() }}</span>
       </template>
     </material-card>
 </template>
@@ -41,7 +41,13 @@ export default {
     channelMembers()
     {
       let members = this.channel.members || [];
-      return members.toString();
+      let names = [];
+      members.forEach(e => {
+        let {firstName, lastName} = e.baseInfo;
+        names.push(`${lastName} ${firstName}`);
+      });
+
+      return names.toString();
     }
   }
 }

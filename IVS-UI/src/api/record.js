@@ -1,5 +1,5 @@
-// import axios from "@/api/httpRequest.js";
-import axios from "axios"
+import axios from "@/api/httpRequest.js";
+// import axios from "axios"
 
 export const GetRecords = () => {
     return axios.request({

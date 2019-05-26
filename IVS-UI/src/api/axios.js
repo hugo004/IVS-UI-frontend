@@ -1,5 +1,5 @@
 import axios from "axios";
-import qs from "qs"
+import qs from "qs";
 
 
 class HttpRequest
@@ -9,9 +9,12 @@ class HttpRequest
     config()
     {
         return {
-          baseURL: "http://localhost:3000/api",
-          timeout: 20000,
-          headers:{}
+          baseURL: "http://localhost:8081/api",
+          timeout: 30000,
+          headers:{
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          }
         }
     }
 
@@ -38,6 +41,8 @@ class HttpRequest
             case 400:
               break;
             case 401:
+              localStorage.clear();
+              location.href = '/';
               break;
             case 403:
               break;
@@ -66,7 +71,7 @@ class HttpRequest
         return Promise.reject(error);
       }
 
-    create(options) 
+    optionConfig(options) 
     {
         options.data = options.data || {};
         options.params = options.params || {};
@@ -84,9 +89,7 @@ class HttpRequest
           // options.params = options.data;
         }
     
-    
-        let req = axios.create(options);
-        return req;
+        return options;
       }
 
     interceptors(instance)
@@ -102,12 +105,8 @@ class HttpRequest
 
         instance.interceptors.response.use(
             response => {
-                return response;
+                return response.data.result;
             }, this.errorHandle);
-        //     error => {
-        //         return Promise.reject(error);
-        //     }
-        // );
     }
 
     request(option)
@@ -116,13 +115,13 @@ class HttpRequest
 
         if (localStorage.getItem("token"))
         {
-            option.headers.authorization = localStorage.getItem("token")
+            option.headers.authorization = `Bearer ${localStorage.getItem("token")}`;
         }
-        // const instance = this.create(option);
+
         const instance = axios.create();
         this.interceptors(instance);
 
-
+        
         return instance(option);
 
     }
