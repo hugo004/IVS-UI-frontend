@@ -87,6 +87,9 @@
         >
           <v-icon color="tertiary">mdi-account</v-icon>
         </router-link>
+
+          <v-icon color="tertiary" @click="logout()">mdi-logout</v-icon>
+
       </v-flex>
     </v-toolbar-items>
   </v-toolbar>
@@ -142,6 +145,11 @@ export default {
         this.responsive = false
         this.responsiveInput = true
       }
+    },
+
+    logout() {
+      localStorage.clear();
+      location.href = '/';
     }
   }
 }

@@ -6,7 +6,7 @@ export default {
   },
 
   //notification control
-  showNotification(state, args=[]) {
+  showNotification(state, args=['top', 'right']) {
     state.top = false
     state.bottom = false
     state.left = false

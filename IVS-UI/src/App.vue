@@ -1,9 +1,9 @@
 <template>
   <v-app>
     <template v-if="isLogin">
-      <!-- <core-filter />
+      <!-- <core-filter /> -->
 
-      <core-toolbar /> -->
+      <core-toolbar />
 
       <core-drawer />
 
@@ -39,7 +39,7 @@
       >
         mdi-bell-plus
       </v-icon>
-      <div>{{message}}</div>
+      <div>{{ message }}</div>
       <v-icon
         size="16"
         @click="snackbar = false"
@@ -56,11 +56,6 @@ export default {
     isLogin: localStorage.getItem('token') ? true : false
   }),
 
-  created() {
-    if (this.isLogin) {
-      this.$router.push('/dashboard');
-    }
-  },
 
   computed: {
     message() {
@@ -99,6 +94,12 @@ export default {
 
     loading() {
       return this.$store.state.loading;
+    }
+  },
+
+  created() {
+    if (this.isLogin) {
+      this.$router.push('/dashboard');
     }
   }
 }

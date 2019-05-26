@@ -29,7 +29,7 @@
             />
           </v-list-tile-avatar>
           <v-list-tile-title class="title">
-            User Name
+            {{ username }}
           </v-list-tile-title>
         </v-list-tile>
         <v-divider/>
@@ -133,6 +133,14 @@ export default {
     },
     items () {
       return this.$t('Layout.View.items')
+    },
+
+    username() {
+      if (localStorage.getItem('username')) {
+        return localStorage.getItem('username');
+      }
+
+      return '';
     }
   },
   mounted () {

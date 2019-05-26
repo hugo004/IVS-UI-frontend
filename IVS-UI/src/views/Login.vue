@@ -62,15 +62,24 @@ export default {
 
   methods: {
     async login() {
-      if (this.$refs.form.validate()) {
-        this.loading = true;
-        let resposne = await LoginIVS({
-          userName: this.userName,
-          password: this.password
-        });
+      try {
+        if (this.$refs.form.validate()) {
+          this.loading = true;
+          let resposne = await LoginIVS({
+            userName: this.userName,
+            password: this.password
+          });
+          this.loading = false;
+          localStorage.setItem('token', resposne.accessToken);
+          localStorage.setItem('username', this.userName);
+          location.reload();
+        }
+      }
+      catch (error) {
+        this.$store.commit('setNotifyType', 'error');
+        this.$store.commit('setMessage', error);
+        this.$store.commit('showNotification');
         this.loading = false;
-        localStorage.setItem('token', resposne.accessToken);
-        location.reload();
       }
     }
   }
