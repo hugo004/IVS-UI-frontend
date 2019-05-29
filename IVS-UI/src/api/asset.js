@@ -8,7 +8,7 @@ export const GetAccessRequestList = (status='ALL') => {
   return axios.request({
     url: '/GetAccessRequestList',
     method: 'get',
-    param: param
+    params: param
   });
 }
 
@@ -38,5 +38,12 @@ export const UpdateRequestStatus = ({
     url: '/UpdateRequestStatus',
     method: 'put',
     data: data
+  });
+}
+
+export const GetAllRegistryAsset = () => {
+  return axios.request({
+    url: '/admin/getAllRegistryAsset',
+    method: 'get'
   });
 }

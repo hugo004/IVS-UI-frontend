@@ -35,5 +35,30 @@ export default {
 
   setLoading(state, val) {
     state.loading = val;
-  }
+  },
+
+  showError(state, msg) {
+    state.message = msg;
+    state.notifyType = 'error';
+
+    state.top = true;
+    state.right = true;
+    state.snackbar = true;
+  },
+
+  showSuccess(state, msg) {
+    state.message = msg;
+    state.notifyType = 'success';
+
+    state.top = true;
+    state.right = true;
+    state.snackbar = true  },
+
+  showWarning(state, msg) {
+    state.message = msg;
+    state.notifyType = 'warning';
+    
+    state.top = true;
+    state.right = true;
+    state.snackbar = true  },
 }

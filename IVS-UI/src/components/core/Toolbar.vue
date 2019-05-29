@@ -69,12 +69,12 @@
           <v-card>
             <v-list dense>
               <v-list-tile
-                v-for="notification in notifications"
-                :key="notification"
+                v-for="(notification,index) in notifications"
+                :key="index"
                 @click="onClick"
               >
                 <v-list-tile-title
-                  v-text="notification"
+                  v-text="notification.requestName"
                 />
               </v-list-tile>
             </v-list>
@@ -101,15 +101,13 @@ import {
   mapMutations
 } from 'vuex'
 
+import {
+  GetAccessRequestList
+} from '@/api/asset.js'
+
 export default {
   data: () => ({
-    notifications: [
-      'Mike, John responded to your email',
-      'You have 5 new tasks',
-      'You\'re now a friend with Andrew',
-      'Another Notification',
-      'Another One'
-    ],
+    notifications: [],
     title: null,
     responsive: false,
     responsiveInput: false
@@ -119,6 +117,10 @@ export default {
     '$route' (val) {
       this.title = val.name
     }
+  },
+
+  async created() {
+    this.notifications = await GetAccessRequestList('UNDETERMINED');
   },
 
   mounted () {

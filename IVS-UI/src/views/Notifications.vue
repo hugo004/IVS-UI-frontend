@@ -76,7 +76,7 @@
 import {
   GetAccessRequestList,
   UpdateRequestStatus
-} from '@/api/notification.js';
+} from '@/api/asset.js';
 
 export default {
   name: 'Notifications',
@@ -140,9 +140,14 @@ export default {
     },
 
     async fetchRequestList() {
-      this.$store.commit('setLoading', true);
-      this.tableItems = await GetAccessRequestList();
-      this.$store.commit('setLoading', false);
+      try {
+        this.$store.commit('setLoading', true);
+        this.tableItems = await GetAccessRequestList();
+        this.$store.commit('setLoading', false);
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+      }
     },
 
     async acceptOrDeny(request, status) {
