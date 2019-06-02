@@ -105,6 +105,10 @@ import {
   GetAccessRequestList
 } from '@/api/asset.js'
 
+import {
+  LogoutIVS
+} from '@/api/auth.js'
+
 export default {
   data: () => ({
     notifications: [],
@@ -120,7 +124,12 @@ export default {
   },
 
   async created() {
-    this.notifications = await GetAccessRequestList('UNDETERMINED');
+    try {
+      this.notifications = await GetAccessRequestList('UNDETERMINED');
+    }
+    catch (error) {
+      this.$store.commit('showError', error);
+    }
   },
 
   mounted () {
@@ -149,9 +158,15 @@ export default {
       }
     },
 
-    logout() {
-      localStorage.clear();
-      location.href = '/';
+    async logout() {
+      try {
+        await LogoutIVS();
+        localStorage.clear();
+        location.href = '/';
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+      }
     }
   }
 }

@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { LoginIVS } from "@/api/login.js";
+import { LoginIVS } from "@/api/auth.js";
 
 export default {
   data: () => ({

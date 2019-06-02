@@ -12,8 +12,8 @@ class HttpRequest
           baseURL: "http://localhost:8081/api",
           timeout: 30000,
           headers:{
-            "Accept": "application/json",
-            "Content-Type": "application/json"
+            // "Accept": "application/json",
+            // "Content-Type": "application/json"
           }
         }
     }

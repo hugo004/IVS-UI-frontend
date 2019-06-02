@@ -47,3 +47,19 @@ export const GetAllRegistryAsset = () => {
     method: 'get'
   });
 }
+
+export const GetAsset = ({
+  assetName,
+  assetIds
+}) => {
+  const params = {
+    assetName: assetName,
+    assetIds: assetIds
+  };
+
+  return axios.request({
+    url: '/getAsset',
+    method: 'get',
+    params: params
+  });
+}

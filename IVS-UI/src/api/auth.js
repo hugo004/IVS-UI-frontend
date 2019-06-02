@@ -14,3 +14,11 @@ export const LoginIVS = ({
         data: data
     });
 };
+
+
+export const LogoutIVS = () => {
+  return axios.request({
+    url: '/logout',
+    method: 'post'
+  });
+};
