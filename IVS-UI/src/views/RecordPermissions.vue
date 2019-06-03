@@ -13,6 +13,7 @@
           right
           absolute
           outline
+          @click="dialog=true"
         >
           <v-icon>fas fa-file-alt</v-icon>
           <span class="heading px-2">Request Access Resource</span>
@@ -69,6 +70,72 @@
         </material-card>
       </v-flex>
     </v-layout>
+
+    <!-- request access form -->
+    <v-dialog v-model="dialog">
+      <v-form
+        v-model="isValid"
+        lazy-validation
+      >
+      <v-card>
+        <v-card-title class="title">Request Access Asset Form</v-card-title>
+        <v-card-text>
+          <v-text-field 
+            v-model="newRequest.eventName"
+            :rules="requiredRule"
+            label="Event Name"
+          />
+
+          <v-combobox 
+            v-model="newRequest.receiverId"
+            :rules="requiredRule"
+            label="Receiver Id"
+          />
+
+          <v-text-field 
+            v-model="newRequest.receiverName"
+            :rules="requiredRule"
+            label="Receiver Name"
+          />
+
+          <v-select 
+            v-model="newRequest.assetName"
+            :items="assetCategory"
+            :rules="requiredRule"
+            label="Asset Name"
+          />
+
+          <v-combobox 
+            v-model="newRequest.assetId"
+            :rules="requiredRule"
+            label="Asset Id"
+            multiple
+          />
+
+          <v-textarea 
+            v-model="newRequest.remarks"
+            label="Remarks"
+          />
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            outline
+          >
+            cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            :loading="createLoading"
+            @click="createNewRequest()"
+          >
+            reqeust
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+      </v-form>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -76,11 +143,16 @@
 import { 
   GetAllRegistryAsset,
   GetSentRequestList,
-  GetAsset
+  GetAsset,
+  RequestAccessAsset
 } from '@/api/asset.js'
+
+import mixin from './js/mixins.js';
 
 export default {
   name: 'RecordPermission',
+  
+  mixins: [mixin],
 
   data: () => ({
     authorizeItem: [],
@@ -140,11 +212,11 @@ export default {
         sortable: false
       },
 
-      {
-        text: 'Skill',
-        value: 'jobs kill',
-        sortable: false
-      },
+      // {
+      //   text: 'Skill',
+      //   value: 'jobs kill',
+      //   sortable: false
+      // },
 
       {
         text: 'Job Duty',
@@ -174,7 +246,20 @@ export default {
       }
     ],
 
-    authorizedData: new Map()
+    authorizedData: new Map(),
+
+    //create request info
+    newRequest: {
+      'receiverId': '',
+      'receiverName': '',
+      'eventName': '',
+      'remarks': '',
+      'assetId': [],
+      'assetName': ''
+    },
+    createLoading: false,
+    dialog: false,
+    isValid: true
   }),
 
   async mounted() {
@@ -194,22 +279,26 @@ export default {
       return this.authorizedData.get(key).items || [];
     },
 
+    dataTimeString(dateString) {
+      return new Date(dateString).toLocaleDateString();
+    },
+
     tableData(name, item) {
       if (name == 'Education') {
         return `
           <td>${item.info.school}</td>
           <td>${item.info.major}</td>
-          <td>${item.info.to}</td>
-          <td>${item.info.from}</td>
+          <td>${this.dataTimeString(item.info.to)}</td>
+          <td>${this.dataTimeString(item.info.from)}</td>
         `;
       }
       else if (name == 'WorkExp') {
         return `
           <td>${item.info.company}</td>
+          <td>${this.dataTimeString(item.info.to)}</td>
+          <td>${this.dataTimeString(item.info.from)}</td>
           <td>${item.info.jobTitle}</td>
           <td>${item.info.jobDuty}</td>
-          <td>${item.info.from}</td>
-          <td>${item.info.to}</td>
         `;
       }
       else if (name == 'VolunteerRecord') {
@@ -309,6 +398,28 @@ export default {
         this.$store.commit('showError', error);
       }
     },
+
+    async createNewRequest() {
+      try {
+        if (this.isValid) {
+          this.createLoading = true;
+          await RequestAccessAsset(this.newRequest);
+          this.createLoading = false;
+          this.$store.commit('showSuccess', 'Request sent');
+          this.dialog = false;
+        }
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+        this.createLoading = false;
+      }
+    },
+
+    async fetchReceiverList() {
+      //get all register user
+
+      //for display in the receiver field (name, id like github invite member)
+    }
   }
 }
 </script>

@@ -63,3 +63,27 @@ export const GetAsset = ({
     params: params
   });
 }
+
+export const RequestAccessAsset = ({
+  receiverId,
+  receiverName,
+  eventName,
+  remarks,
+  assetId,
+  assetName
+}) => {
+  const data = {
+    receiverId: receiverId,
+    receiverName: receiverName,
+    eventName: eventName,
+    remarks: remarks,
+    assetId: assetId,
+    assetName: assetName
+  };
+
+  return axios.request({
+    url: '/requestAccessAsset',
+    method: 'post',
+    data: data
+  });
+}
