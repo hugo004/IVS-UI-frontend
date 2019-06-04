@@ -24,12 +24,14 @@
           <template slot="header">
             <v-select 
               :items="authorizeItem"
-              itemText="name"
+              itemText="owner"
               label="Authorize people"
               color="white"
               :loading="loading"
               solo
               dark
+              return-object
+              @change="selectAuthorizeData"
             />
           </template>
           <v-tabs
@@ -337,19 +339,19 @@ export default {
     async fetchAuthorizeItem() {
       try {
         this.loading = true;
-
+  
         //fetech authorize item
-        this.authorizeItem = await GetSentRequestList().then(result => {
+        let authoirzedList = await GetSentRequestList().then(result => {
           let authorized = [];
           //get ACCEPT reqeust item, it the people authorize me, so put them on the list
           result.forEach(e => {
             if (e.status == 'ACCEPT') {
               if (!authorized.includes(e.senderName)) {
                 authorized.push({
-                  'name': e.receiverName,
+                  'owner': e.receiverName,
                   'assetName': e.assetName,
                   'assetIds': e.requested,
-                  'items': []
+                  'ownerData': new Map()
                 });
               }
             }
@@ -359,9 +361,10 @@ export default {
         });
 
         //put authorize item into different cateogry
-        for (let i=0; i<this.authorizeItem.length; i++) {
-          let item = this.authorizeItem[i];
-            const {assetName, assetIds} = item;
+        let authorizedItems = [];
+        for (let i=0; i<authoirzedList.length; i++) {
+          let item = authoirzedList[i];
+            const {assetName, assetIds, owner} = item;
 
             let itemList =  await GetAsset({
               'assetName': assetName,
@@ -383,14 +386,38 @@ export default {
               headers = this.volunteerHeaders;
             }
 
-            this.authorizedData.set(assetName, {
+            let ownerData = new Map();
+            ownerData.set(assetName, {
               'category': assetName,
               'headers': headers,
               'items': itemList
             });
 
+            //put same owner data in to array
+            let index = -1;
+            //get the index of authorized owner
+            for (let i in authorizedItems) {
+              let item = authorizedItems[i];
+              if (item.owner == owner) {
+                index = i;
+              }
+            }
+            
+            if (index > -1) {
+              let item = authorizedItems[index];
+              //if same, merge the map
+              item.data = new Map([...item.data, ...ownerData]);
+            }
+            else {
+              authorizedItems.push({
+                owner: owner,
+                data: ownerData
+              });
+            }
+
         }
 
+        this.authorizeItem = authorizedItems;
         this.loading = false;
 
       }
@@ -419,6 +446,10 @@ export default {
       //get all register user
 
       //for display in the receiver field (name, id like github invite member)
+    },
+
+    selectAuthorizeData(val) {
+      this.authorizedData = val.data;
     }
   }
 }
