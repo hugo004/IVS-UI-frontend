@@ -26,7 +26,7 @@
               :items="authorizeItem"
               itemText="owner"
               label="Authorize people"
-              color="white"
+              color="black"
               :loading="loading"
               solo
               dark
@@ -350,8 +350,7 @@ export default {
                 authorized.push({
                   'owner': e.receiverName,
                   'assetName': e.assetName,
-                  'assetIds': e.requested,
-                  'ownerData': new Map()
+                  'assetIds': e.requested
                 });
               }
             }
@@ -414,7 +413,6 @@ export default {
                 data: ownerData
               });
             }
-
         }
 
         this.authorizeItem = authorizedItems;
