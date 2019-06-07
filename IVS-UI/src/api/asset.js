@@ -1,4 +1,5 @@
 import axios from "@/api/httpRequest.js";
+import qs from "qs";
 
 export const GetAccessRequestList = (status='ALL') => {
   const param = {
@@ -85,5 +86,20 @@ export const RequestAccessAsset = ({
     url: '/requestAccessAsset',
     method: 'post',
     data: data
+  });
+}
+
+export const GetChannelMemberAssets = (memberIds) => {
+
+  //get with array param
+  const params = new URLSearchParams();
+  memberIds.forEach(id => {
+    params.append('memberIds', id);
+  });
+
+  return axios.request({
+    url: '/admin/getChannelMembersAssets',
+    method: 'get',
+    params: params
   });
 }

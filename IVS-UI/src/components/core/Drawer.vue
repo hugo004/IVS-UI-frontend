@@ -122,7 +122,7 @@ export default {
     responsive: false
   }),
   computed: {
-    ...mapState('app', ['image', 'color']),
+    ...mapState('app', ['image', 'color', 'userInfo']),
     inputValue: {
       get () {
         return this.$store.state.app.drawer
@@ -136,8 +136,11 @@ export default {
     },
 
     username() {
-      if (localStorage.getItem('username')) {
-        return localStorage.getItem('username');
+      
+      if (localStorage.getItem('userInfo')) {
+        let userInfoStr = localStorage.getItem('userInfo');
+        let userInfo = JSON.parse(userInfoStr).baseInfo;
+        return `${userInfo.lastName} ${userInfo.firstName}`;
       }
 
       return '';

@@ -1,6 +1,8 @@
 // https://vuex.vuejs.org/en/state.html
 
 export default {
+  //user info
+  userInfo: null,
   myChannels: [],
 
   //progress loading

@@ -71,8 +71,8 @@ export default {
           });
           this.loading = false;
           localStorage.setItem('token', resposne.accessToken);
-          localStorage.setItem('username', this.userName);
-          location.reload();
+          localStorage.setItem('userInfo', resposne.userInfo);
+          location.href = '/';
         }
       }
       catch (error) {

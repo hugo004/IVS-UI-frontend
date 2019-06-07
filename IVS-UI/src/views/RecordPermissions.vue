@@ -124,6 +124,7 @@
           <v-spacer></v-spacer>
           <v-btn
             outline
+            @click="dialog=false"
           >
             cancel
           </v-btn>
