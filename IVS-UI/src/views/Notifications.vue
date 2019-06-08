@@ -38,7 +38,7 @@
           <template v-slot:items="props">
             <tr>
               <td class="text-xs-left">{{ props.item.requestName }}</td>
-              <td class="text-xs-left">{{ props.item.receiverName }}</td>
+              <td class="text-xs-left">{{ props.item.senderName }}</td>
               <td class="text-xs-left">{{ new Date(props.item.createTime).toLocaleString() }}</td>
               <td class="text-xs-left">{{ props.item.status }}</td>
               <td class="text-xs-left">{{ props.item.remarks }}</td>
@@ -75,7 +75,8 @@
 <script>
 import {
   GetAccessRequestList,
-  UpdateRequestStatus
+  UpdateRequestStatus,
+  UpdateChannelInvitationStatus
 } from '@/api/asset.js';
 
 export default {
@@ -155,17 +156,27 @@ export default {
         requestId, 
         senderId, 
         assetName,
-        requested
+        requested,
+        requestType
       } = request;
 
       this.$store.commit('setLoading', true);
-      await UpdateRequestStatus({
-        'senderId': senderId,
-        'requestId': requestId,
-        'assetName': assetName,
-        'authorizeList': requested,
-        'newStatus': status
-      });
+      if (requestType == 'CHANNEL') {
+        await UpdateChannelInvitationStatus({
+          'channelId': senderId,
+          'requestId': requestId,
+          'status': status
+        });
+      }
+      else {
+        await UpdateRequestStatus({
+          'senderId': senderId,
+          'requestId': requestId,
+          'assetName': assetName,
+          'authorizeList': requested,
+          'newStatus': status
+        });
+      }
       this.$store.commit('setLoading', false);
       this.$store.commit('setMessage', 'Request status updated')
       this.$store.commit('showNotification');

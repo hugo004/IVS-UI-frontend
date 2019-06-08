@@ -103,3 +103,54 @@ export const GetChannelMemberAssets = (memberIds) => {
     params: params
   });
 }
+
+export const SendChannelInvitation = ({
+  channelId,
+  newMemberIds,
+  remarks
+}) => {
+
+  const data = {
+    'channelId': channelId,
+    'newMembers': newMemberIds,
+    'remarks': remarks
+  };
+
+  return axios.request({
+    url: '/admin/sendChannelInvitation',
+    method: 'post',
+    data: data
+  });
+}
+
+export const UpdateChannelInvitationStatus = ({
+  channelId,
+  requestId,
+  status
+}) => {
+
+  const data = {
+    'channelId': channelId,
+    'requestId': requestId,
+    'status': status
+  };
+
+  return axios.request({
+    url: '/admin/updateChannelInvitationStatus',
+    method: 'put',
+    data: data
+  });
+}
+
+export const ExitChannel = (channelId) => {
+  
+  const data = {
+    'channelId': channelId
+  };
+
+  return axios.request({
+    url: '/admin/exitChannel',
+    method: 'put',
+    data: data
+  });
+}

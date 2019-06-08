@@ -3,6 +3,7 @@
       color="green"
       :title="channel.name"
       :text="`Owner: ${channel.owner}`"
+      class="text-capitalize"
     >
       <h3 class="title font-weight-light">Members:</h3>
       <p class="category d-inline-flex font-weight-light">{{ channelMembers }}</p>
@@ -16,6 +17,13 @@
         </v-icon>
         <span class="caption grey--text font-weight-light">Channel create time: {{ new Date(channel.createTime).toLocaleDateString() }}</span>
       </template>
+      
+    <!-- pass all slot -->
+      <slot 
+        v-for="slot in Object.keys($slots)"
+        :name="slot"
+        :slot="slot"
+      ></slot>
     </material-card>
 </template>
 

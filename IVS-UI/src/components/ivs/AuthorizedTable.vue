@@ -1,8 +1,13 @@
 <template>
   <material-card>
-      <template slot="header">
-        <slot name="header"></slot>
-      </template>
+
+    <!-- pass all slot -->
+      <slot 
+        v-for="slot in Object.keys($slots)"
+        :name="slot"
+        :slot="slot"
+      ></slot>
+      
       <v-tabs
         dark
         icons-and-text

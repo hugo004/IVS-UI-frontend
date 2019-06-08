@@ -31,25 +31,49 @@
           >
             <ivs-channel-card
               :channel="channel"
-            ></ivs-channel-card>
+            >
+              <template slot="header-actions">
+                <v-btn
+                  round
+                  color="primary"
+                  @click.stop="exitChannelDialog(channel)"
+                >
+                  exit
+                </v-btn>
+              </template>
+            </ivs-channel-card>
           </v-flex>
         </v-layout>
       </v-flex>
       
       <v-flex class="pa-0">
         <ivs-authorized-table
-          v-if="selectedChannel"
+          v-if="showChannelInfo"
           :tableData="authorizedData"
         >
+
           <template slot="header">
-            <div class="mb-3 heading">
-              Channel Name: {{ selectedChannel.name || ''}}
-            </div>
+            <v-layout align-center>
+              <v-flex>
+                <span class="title text-capitalize">{{ selectedChannel.name || ''}}</span>
+              </v-flex>
+              <v-flex xs3 class="text-xs-right">
+                <v-btn
+                  round
+                  color="primary"
+                  class="elevation-1"
+                  @click="memberInviteForm()"
+                >
+                  invite member
+                </v-btn>
+              </v-flex>
+            </v-layout>
 
             <v-select 
+              class="text-capitalize"
               :items="channelMembers"
               itemText="baseInfo.firstName"
-              label="people"
+              label="member"
               color="black"
               solo
               dark
@@ -66,27 +90,98 @@
       persistent
       max-width="500"
     >
-      <ivs-channel-create-form 
-        ref="form"
-        v-model="newChannelInfo"
-      >
-        <template slot="actions">
-          <v-spacer></v-spacer>
-          <v-btn 
-            color="primary"
-            :loading="createLoading"
-            @click="onChannelCreate()"
-          >
-            create
-          </v-btn>
-          <v-btn
+      <template v-if="inviteNewMember">
+        <v-form
+          ref="inviteForm"
+          lazy-validation
+        >
+          <v-card>
+            <v-card-title class="title">Invite New Member</v-card-title>
+            <v-card-text>
+              <v-layout column> 
+                <v-combobox
+                  :rules="requiredRule"
+                  v-model="newMembers"
+                  multiple
+                  chips
+                  label="enter new member id/name e.g u-001/hugo"
+                />
+                <v-textarea
+                  v-model="inviteMessage"
+                />
+              </v-layout>
+            </v-card-text>
+            <v-divider></v-divider>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn 
+                outline
+                @click="dialog=false, inviteNewMember=false"
+                > 
+                  cancel
+                </v-btn>
+                <v-btn
+                  color="green"
+                  dark
+                  :loading="inviteLoading"
+                  @click="sendInvitation()"
+                >
+                  invite
+                </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-form>
+      </template>
+
+      <template v-else-if="isExitChannel">
+        <v-card>
+          <v-card-text>
+            <div class="title my-3">Are you sure to exit the channel:</div>
+            {{ selectedChannel.name || '' }}
+          </v-card-text>
+          <v-divider></v-divider>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
               outline
-              @click="onCancel()"
+              @click="cancelExit()"
             >
               cancel
-          </v-btn>
-        </template>
-      </ivs-channel-create-form>
+            </v-btn>
+            <v-btn
+              color="primary"
+              :loading="exitLoading"
+              @click="exitChannel()"
+            >
+              confirm
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </template>
+
+      <template v-else>
+        <ivs-channel-create-form 
+          ref="form"
+          v-model="newChannelInfo"
+        >
+          <template slot="actions">
+            <v-spacer></v-spacer>
+            <v-btn
+                outline
+                @click="onCancel()"
+              >
+                cancel
+            </v-btn>
+            <v-btn 
+              color="primary"
+              :loading="createLoading"
+              @click="onChannelCreate()"
+            >
+              create
+            </v-btn>
+          </template>
+        </ivs-channel-create-form>
+      </template>
     </v-dialog>
 
   </v-container>
@@ -105,12 +200,17 @@ import {
   GetSentRequestList,
   GetAsset,
   RequestAccessAsset,
-  GetChannelMemberAssets
+  GetChannelMemberAssets,
+  SendChannelInvitation,
+  ExitChannel
 } from '@/api/asset.js'
 
+import mixin from './js/mixins.js';
 
 export default {
   name: 'ChannelManagement',
+
+  mixins: [mixin],
 
   data: () => ({
     dialog: false,
@@ -203,30 +303,26 @@ export default {
       ]]
     ]),
 
+    showChannelInfo: false,
+
     channelAssets: [],
     selectedChannel: null,
     selectedMemberId: '',
-    selectedMemberInfo: {}
+    selectedMemberInfo: {},
+    inviteNewMember: false,
+    inviteLoading: false,
+    inviteMessage: '',
+    newMembers: [],
+
+    //exit channel
+    exitLoading: false,
+    isExitChannel: false
 
   }),
 
-  async mounted() {
+  mounted() {
     if (this.myChannels.length < 1) {
-      this.$store.commit('setLoading', true);
-      
-      await GetUserChannel().then((result) => {
-        let integrated = [];
-        //repalce the channel's member property from string id to member info (string[] with object[])
-        result.forEach(e => {
-          let {channel, membersInfo} = e;
-          channel.members = membersInfo;
-          integrated.push(channel);
-        });
-
-        this.$store.commit('setChannels', integrated);
-      });
-
-      this.$store.commit('setLoading', true);
+      this.fetchChannel();
     }
 
   },
@@ -285,6 +381,28 @@ export default {
       this.dialog = false;
     },
 
+    async fetchChannel() {
+      try {
+        this.$store.commit('setLoading', true);
+        await GetUserChannel().then((result) => {
+          let integrated = [];
+          //repalce the channel's member property from string id to member info (string[] with object[])
+          result.forEach(e => {
+            let {channel, membersInfo} = e;
+            channel.members = membersInfo;
+            integrated.push(channel);
+          });
+
+          this.$store.commit('setChannels', integrated);
+        });
+
+        this.$store.commit('setLoading', false);
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+      }
+    },
+
     async onChannelCreate() {
       if (this.$refs.form.validate()) {
 
@@ -339,7 +457,7 @@ export default {
       try {
         if (!channel) return;
         this.selectedChannel = channel;
-
+        this.showChannelInfo = true;
         this.$store.commit('setLoading', true);
 
         //get the channel member id and get members asset
@@ -375,6 +493,69 @@ export default {
 
     viewMember(member) {
       this.selectedMemberId = member.userId;
+    },
+
+    memberInviteForm() {
+      this.dialog = true;
+      this.inviteNewMember = true;
+    },
+
+    async sendInvitation() {
+      if (!this.selectedChannel) return;
+
+      let channel = this.selectedChannel;
+
+      try {
+        if (this.$refs.inviteForm.validate()) {
+          this.inviteLoading = true;
+
+          await SendChannelInvitation({
+            'channelId': channel.channelId,
+            'newMemberIds': this.newMembers,
+            'remarks': this.inviteMessage
+          });
+
+          this.inviteLoaidng = false;
+          this.dialog = false;
+
+          this.$store.commit('showSuccess', 'Invitation sent');
+        }
+      }
+      catch(error) {
+        this.$store.commit('showError', error);
+        this.inviteLoading = false;
+      }
+    },
+
+    exitChannelDialog(channel) {
+      this.dialog = true;
+      this.isExitChannel = true;
+      this.selectedChannel = channel;
+    },
+
+    cancelExit() {
+      this.dialog = false;
+      this.isExitChannel = false;
+    },
+
+    async exitChannel() {
+      if (!this.selectedChannel) return;
+
+      try {
+        this.exitLoading = true;
+        await ExitChannel(this.selectedChannel.channelId);
+        this.exitLoading = false;
+
+        this.cancelExit();
+
+        this.$store.commit('showSuccess', 'Channel Exit Success!');
+        this.fetchChannel();
+
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+        this.exitLoading = false;
+      }
     }
   }
 
