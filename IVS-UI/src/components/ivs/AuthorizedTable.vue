@@ -36,7 +36,25 @@
                 :items="tableItems(key)"
               >
                 <template v-slot:items="props">
-                  <tr v-html="content(key, props.item)"></tr>
+                  <tr>
+                    <td 
+                      v-for="(data,index) in content(key, props.item)"
+                      :key="index"
+                      >
+                        {{ data }}
+                      </td>
+
+                      <td v-if="showAction" class="text-xs-right">
+                        <v-btn
+                          small
+                          color="primary"
+                          @click="$emit('click', props.item)"
+                        >
+                          revoke
+                        </v-btn>
+                      </td>
+                  </tr>
+                  
                 </template>
               </v-data-table>
             </v-card-text>
@@ -51,7 +69,7 @@ export default {
   inheritAttrs: false,
   
   props: {
-
+    showAction: Boolean,
     loading: Boolean,
     tableData: Map,
     
@@ -154,30 +172,43 @@ export default {
     dataTimeString(dateString) {
       return new Date(dateString).toLocaleDateString();
     },
-
-    content(name, item) {
-      if (name == 'Education') {
+    test() {
+      console.log('s')
+    },
+    action(item) {
+      if (this.showAction) {
         return `
-          <td>${item.info.school}</td>
-          <td>${item.info.major}</td>
-          <td>${this.dataTimeString(item.info.to)}</td>
-          <td>${this.dataTimeString(item.info.from)}</td>
+          <td class="text-xs-right">
+              <a
+                class="v-btn v-btn--small theme--light primary"
+                @click.prevent="test()"
+              >revoke</a>
+            </td>
         `;
-      }
-      else if (name == 'WorkExp') {
-        return `
-          <td>${item.info.company}</td>
-          <td>${this.dataTimeString(item.info.to)}</td>
-          <td>${this.dataTimeString(item.info.from)}</td>
-          <td>${item.info.jobTitle}</td>
-          <td>${item.info.jobDuty}</td>
-        `;
-      }
-      else if (name == 'VolunteerRecord') {
-        return ``;
       }
 
       return '';
+    },
+
+    content(name, item) {
+      let dataList = [];
+      if (name == 'Education') {
+        dataList.push(item.info.school);
+        dataList.push(item.info.major);
+        dataList.push(this.dataTimeString(item.info.to));
+        dataList.push(this.dataTimeString(item.info.from));
+      }
+      else if (name == 'WorkExp') {
+        dataList.push(item.info.company);
+        dataList.push(this.dataTimeString(item.info.to));
+        dataList.push(this.dataTimeString(item.info.from));
+        dataList.push(item.info.jobTitle);
+        dataList.push(item.info.jobDuty);
+      }
+      else if (name == 'VolunteerRecord') {
+      }
+
+      return dataList;
     },
   }
 }

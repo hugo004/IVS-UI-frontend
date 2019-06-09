@@ -157,3 +157,24 @@ export const ExitChannel = (channelId) => {
     data: data
   });
 }
+
+
+export const RevokeAccessAsset = ({
+  assetName,
+  assetIds,
+  revokeUser,
+  requestId
+}) => {
+  const data = {
+    'assetName': assetName,
+    'assetIds': assetIds,
+    'revokeUser': revokeUser,
+    'requestId': requestId
+  };
+
+  return axios.request({
+    url: '/revokeAccessAsset',
+    method: 'post',
+    data: data
+  });
+}

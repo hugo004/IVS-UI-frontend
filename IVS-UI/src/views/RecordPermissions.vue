@@ -73,11 +73,15 @@
       </v-flex>
 
       <v-flex>
-        <ivs-authorized-table :tableData="myAuthorizedAsset">
+        <ivs-authorized-table 
+          :tableData="myAuthorizedAsset"
+          @click="onAssetRevoke"
+          show-action
+        >
           <template slot="header">
             <v-layout align-center>
               <v-flex>
-                <span class="title text-capitalize">Revoke my granted asset</span>
+                <span class="text-capitalize">Revoke my granted asset</span>
               </v-flex>
             </v-layout>
 
@@ -104,64 +108,64 @@
         v-model="isValid"
         lazy-validation
       >
-      <v-card>
-        <v-card-title class="title">Request Access Asset Form</v-card-title>
-        <v-card-text>
-          <v-text-field 
-            v-model="newRequest.eventName"
-            :rules="requiredRule"
-            label="Event Name"
-          />
+        <v-card>
+          <v-card-title class="title">Request Access Asset Form</v-card-title>
+          <v-card-text>
+            <v-text-field 
+              v-model="newRequest.eventName"
+              :rules="requiredRule"
+              label="Event Name"
+            />
 
-          <v-combobox 
-            v-model="newRequest.receiverId"
-            :rules="requiredRule"
-            label="Receiver Id"
-          />
+            <v-combobox 
+              v-model="newRequest.receiverId"
+              :rules="requiredRule"
+              label="Receiver Id"
+            />
 
-          <v-text-field 
-            v-model="newRequest.receiverName"
-            :rules="requiredRule"
-            label="Receiver Name"
-          />
+            <v-text-field 
+              v-model="newRequest.receiverName"
+              :rules="requiredRule"
+              label="Receiver Name"
+            />
 
-          <v-select 
-            v-model="newRequest.assetName"
-            :items="assetCategory"
-            :rules="requiredRule"
-            label="Asset Name"
-          />
+            <v-select 
+              v-model="newRequest.assetName"
+              :items="assetCategory"
+              :rules="requiredRule"
+              label="Asset Name"
+            />
 
-          <v-combobox 
-            v-model="newRequest.assetId"
-            :rules="requiredRule"
-            label="Asset Id"
-            multiple
-          />
+            <v-combobox 
+              v-model="newRequest.assetId"
+              :rules="requiredRule"
+              label="Asset Id"
+              multiple
+            />
 
-          <v-textarea 
-            v-model="newRequest.remarks"
-            label="Remarks"
-          />
-        </v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            outline
-            @click="dialog=false"
-          >
-            cancel
-          </v-btn>
-          <v-btn
-            color="primary"
-            :loading="createLoading"
-            @click="createNewRequest()"
-          >
-            reqeust
-          </v-btn>
-        </v-card-actions>
-      </v-card>
+            <v-textarea 
+              v-model="newRequest.remarks"
+              label="Remarks"
+            />
+          </v-card-text>
+          <v-divider></v-divider>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              outline
+              @click="dialog=false"
+            >
+              cancel
+            </v-btn>
+            <v-btn
+              color="primary"
+              :loading="createLoading"
+              @click="createNewRequest()"
+            >
+              reqeust
+            </v-btn>
+          </v-card-actions>
+        </v-card>
       </v-form>
     </v-dialog>
   </v-container>
@@ -173,11 +177,13 @@ import {
   GetSentRequestList,
   GetAsset,
   RequestAccessAsset,
-  GetAccessRequestList
+  GetAccessRequestList,
+  RevokeAccessAsset
 } from '@/api/asset.js'
 
 import mixin from './js/mixins.js';
 import { mapState } from 'vuex';
+import { userInfo } from 'os';
 
 export default {
   name: 'RecordPermission',
@@ -294,7 +300,7 @@ export default {
     //the asset my authorized to other person
     authorizedAsset: new Map(),
     myAuthenUserList: [],
-    seletedUserId: -1,
+    seletedUserInfo: {},
     myAuthenAssetLoading: false
   }),
 
@@ -314,7 +320,8 @@ export default {
     }),
 
     myAuthorizedAsset() {
-      let myAsset = this.authorizedAsset.get(this.seletedUserId);
+      const {id} = this.seletedUserInfo;
+      let myAsset = this.authorizedAsset.get(id);
       console.log(myAsset);
 
       if (myAsset) {
@@ -550,7 +557,8 @@ export default {
             //put the user, i authen to on the select list
             let userInfo = {
               'name': e.senderName,
-              'id': e.senderId
+              'id': e.senderId,
+              'requestId': e.requestId
             };
 
             if (!_this.myAuthenUserList.includes(userInfo)) {
@@ -591,7 +599,32 @@ export default {
 
     viewMyAuthenInfo(user) {
       if (user) {
-        this.seletedUserId = user.id;
+        this.seletedUserInfo = user;
+      }
+    },
+
+    async onAssetRevoke(assetInfo) {
+      try {
+        this.$store.commit('setLoading', true);
+
+        const {$class, assetId} = assetInfo;
+        let assetName = $class.split('.');
+        assetName = assetName[assetName.length - 1];
+
+        const {id, requestId} = this.seletedUserInfo;
+
+        await RevokeAccessAsset({
+          'assetName': assetName,
+          'assetIds': [assetId],
+          'requestId': requestId,
+          'revokeUser': id
+        });
+        
+        this.fetchMyAuthorizedItem();
+        this.$store.commit('setLoading', false);
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
       }
     }
 

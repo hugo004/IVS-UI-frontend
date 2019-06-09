@@ -44,6 +44,7 @@ export default {
     state.top = true;
     state.right = true;
     state.snackbar = true;
+    state.loading = false;
   },
 
   showSuccess(state, msg) {
