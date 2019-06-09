@@ -71,6 +71,31 @@
           </v-tabs>
         </material-card>
       </v-flex>
+
+      <v-flex>
+        <ivs-authorized-table :tableData="myAuthorizedAsset">
+          <template slot="header">
+            <v-layout align-center>
+              <v-flex>
+                <span class="title text-capitalize">Revoke my granted asset</span>
+              </v-flex>
+            </v-layout>
+
+            <v-select 
+              class="text-capitalize"
+              :items="myAuthenUserList"
+              item-text="name"
+              label="Granted to"
+              color="white"
+              solo
+              dark
+              return-object
+              @change="viewMyAuthenInfo"
+              :loading="myAuthenAssetLoading"
+            />
+          </template>
+        </ivs-authorized-table>
+      </v-flex>
     </v-layout>
 
     <!-- request access form -->
@@ -147,10 +172,12 @@ import {
   GetAllRegistryAsset,
   GetSentRequestList,
   GetAsset,
-  RequestAccessAsset
+  RequestAccessAsset,
+  GetAccessRequestList
 } from '@/api/asset.js'
 
 import mixin from './js/mixins.js';
+import { mapState } from 'vuex';
 
 export default {
   name: 'RecordPermission',
@@ -262,7 +289,13 @@ export default {
     },
     createLoading: false,
     dialog: false,
-    isValid: true
+    isValid: true,
+
+    //the asset my authorized to other person
+    authorizedAsset: new Map(),
+    myAuthenUserList: [],
+    seletedUserId: -1,
+    myAuthenAssetLoading: false
   }),
 
   async mounted() {
@@ -271,6 +304,33 @@ export default {
 
     //authorized people
     await this.fetchAuthorizeItem();
+
+    this.fetchMyAuthorizedItem();
+  },
+
+  computed: {
+    ...mapState({
+      headersMap: state => state.assetHeadersMap
+    }),
+
+    myAuthorizedAsset() {
+      let myAsset = this.authorizedAsset.get(this.seletedUserId);
+      console.log(myAsset);
+
+      if (myAsset) {
+        let assetMap = new Map();
+        for (let field in myAsset) {
+          assetMap.set(field, {
+            'headers': this.headersMap.get(field),
+            'items': myAsset[field]
+          });
+        }
+
+        return assetMap;
+      }
+      
+      return new Map();
+    },
   },
 
   methods: {
@@ -449,7 +509,92 @@ export default {
 
     selectAuthorizeData(val) {
       this.authorizedData = val.data;
+    },
+
+    async fetchMyAuthorizedItem() {
+      try {
+        
+        let _this = this;
+        _this.myAuthenAssetLoading = true;
+
+        let authorizedData = await GetAccessRequestList('ACCEPT').then(result => {
+
+          let requestList = result || [];
+          let integratedMap = new Map();
+
+          requestList.forEach(e => {
+            let obj = {};
+            let key = e.senderId;
+            
+            //save same requester requestd asset together
+            if (integratedMap.has(key)) {
+              obj = integratedMap.get(key) || {};
+              let assetList = obj[e.assetName] || [];
+
+              if (assetList.length > 0) {
+                assetList.push(...e.requested);
+              }
+              else {
+                assetList.push(e.requested);
+              }
+
+              obj[e.assetName] = assetList;
+              integratedMap.set(key, obj);
+            }
+            //for new requester
+            else {
+              obj[e.assetName] = e.requested;
+              integratedMap.set(key, obj);
+            }
+
+            //put the user, i authen to on the select list
+            let userInfo = {
+              'name': e.senderName,
+              'id': e.senderId
+            };
+
+            if (!_this.myAuthenUserList.includes(userInfo)) {
+              _this.myAuthenUserList.push(userInfo);
+            }
+
+          });
+
+          return integratedMap;
+
+        });
+
+        let authorizedMap = authorizedData;
+        for (const [key, value] of authorizedMap.entries()) {
+          let obj = {};
+
+          for (let asset in value) {
+            let assetIds = value[asset];
+            let assetList = await GetAsset({
+              'assetName': asset,
+              'assetIds': assetIds
+            });
+
+            obj[asset] = assetList;
+          }
+
+          _this.authorizedAsset.set(key, obj);
+        }
+
+        _this.myAuthenAssetLoading = false;
+
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+        this.myAuthenAssetLoading = false;
+      }
+    },
+
+    viewMyAuthenInfo(user) {
+      if (user) {
+        this.seletedUserId = user.id;
+      }
     }
+
   }
 }
 </script>
