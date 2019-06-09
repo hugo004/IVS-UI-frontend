@@ -53,10 +53,13 @@ export const GetAsset = ({
   assetName,
   assetIds
 }) => {
-  const params = {
-    assetName: assetName,
-    assetIds: assetIds
-  };
+  const assets = new URLSearchParams();
+  assets.append('assetName', assetName);
+  assetIds.forEach(id => {
+    assets.append('assetIds', id);
+  });
+
+  const params = assets;
 
   return axios.request({
     url: '/getAsset',
