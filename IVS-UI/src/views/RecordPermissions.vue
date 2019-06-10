@@ -522,6 +522,7 @@ export default {
       try {
         
         let _this = this;
+        _this.myAuthorizedAsset.clear();
         _this.myAuthenAssetLoading = true;
 
         let authorizedData = await GetAccessRequestList('ACCEPT').then(result => {
@@ -530,7 +531,10 @@ export default {
           let integratedMap = new Map();
 
           requestList.forEach(e => {
-            let obj = {};
+            let obj = {
+              'requestId': e.requestId
+            };
+            
             let key = e.senderId;
             
             //save same requester requestd asset together
@@ -557,8 +561,7 @@ export default {
             //put the user, i authen to on the select list
             let userInfo = {
               'name': e.senderName,
-              'id': e.senderId,
-              'requestId': e.requestId
+              'id': e.senderId
             };
 
             if (!_this.myAuthenUserList.includes(userInfo)) {
@@ -576,10 +579,18 @@ export default {
           let obj = {};
 
           for (let asset in value) {
+            //ingore request id, it is for revoke api call
+            if (asset == 'requestId') continue;
+
             let assetIds = value[asset];
             let assetList = await GetAsset({
               'assetName': asset,
               'assetIds': assetIds
+            });
+
+            //add request id to the asset for later revoke action
+            assetList.forEach(e => {
+              e['requestId'] = value['requestId'];
             });
 
             obj[asset] = assetList;
@@ -607,11 +618,12 @@ export default {
       try {
         this.$store.commit('setLoading', true);
 
-        const {$class, assetId} = assetInfo;
+        const {$class, assetId, requestId} = assetInfo;
+
         let assetName = $class.split('.');
         assetName = assetName[assetName.length - 1];
 
-        const {id, requestId} = this.seletedUserInfo;
+        const {id} = this.seletedUserInfo;
 
         await RevokeAccessAsset({
           'assetName': assetName,
