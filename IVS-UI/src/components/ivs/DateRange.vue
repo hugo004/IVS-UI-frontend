@@ -22,14 +22,14 @@
                     :rules="[v => !!v || 'required']"
                 ></v-text-field>
                 </template>
-                <v-date-picker v-model="start_date" :min="new Date().toISOString().substr(0, 10)" no-title>
+                <v-date-picker v-model="start_date"  no-title>
                     <v-spacer></v-spacer>
                     <v-btn flat color="primary" @click="menu1 = false">Cancel</v-btn>
                     <v-btn flat color="primary" @click="$refs.menuSD.save(start_date)">OK</v-btn>
                 </v-date-picker>
             </v-menu>
         </v-flex>
-        <v-flex xs12>
+        <v-flex xs12 v-if="singleDate">
             <v-menu
                 ref="menuED"
                 v-model="menu2"
@@ -68,7 +68,18 @@ export default {
         startDate: String,
         endDate: String,
         labelStartDate: String,
-        labelEndDate: String
+        labelEndDate: String,
+        singleDate: {
+            type: Boolean,
+            default: true
+        },
+        minDate: {
+            type: String,
+            default: () => {
+                // return new Date().toISOString().substr(0, 10);
+                return '1000-01-01'
+            }
+        }
     },
 
     data()

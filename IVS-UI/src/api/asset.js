@@ -178,3 +178,22 @@ export const RevokeAccessAsset = ({
     data: data
   });
 }
+
+
+export const UploadAsset = ({
+  educations,
+  workExps,
+  volunteerRecords
+}) => {
+  const data = {
+    'educations': educations,
+    'workExps': workExps,
+    'volunteerRecords': volunteerRecords
+  };
+
+  return axios.request({
+    url: '/uploadRecord',
+    method: 'post',
+    data: data
+  });
+}

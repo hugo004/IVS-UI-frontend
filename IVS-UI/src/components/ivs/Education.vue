@@ -15,8 +15,8 @@
             <v-layout row wrap>
                 <v-flex xs12>
                     <v-text-field 
-                        label="Institution"
-                        v-model="local_field.name"
+                        label="School"
+                        v-model="local_field.school"
                     ></v-text-field>
                 </v-flex>
                 <v-flex xs12>

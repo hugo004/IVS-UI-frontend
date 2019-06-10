@@ -65,9 +65,17 @@
     <v-dialog 
       v-model="upload"
       persistent
+      scrollable
     >
       <v-card>
-        <ivs-upload-record @save="saveRecord"/>
+        <v-card-text>
+          <ivs-upload-record 
+            @save="saveRecord" 
+            class="text-xs-left"
+            :loading="loading"
+          />
+        </v-card-text>
+        <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn 
@@ -93,10 +101,15 @@ import {
   GetUserChannel
 } from '@/api/channel.js'
 
+import {
+  UploadAsset
+} from '@/api/asset.js'
+
 export default {
   data () {
     return {
       upload: false,
+      loading: false,
       headers: [
         {
           sortable: false,
@@ -153,9 +166,28 @@ export default {
   },
 
   methods: {
-    saveRecord(record)
+    async saveRecord(record)
     {
-      console.log(record);
+      try {
+        console.log(record);
+        if (record) {
+          this.loading = true;
+
+          const {educations, workExps, volunteer} = record;
+          await UploadRecord({
+            'educations': educations,
+            'workExps': workExps,
+            'volunteerRecords':volunteer
+          });
+
+          this.loading = false;
+          this.upload = false;
+        }
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+        this.loading = false;
+      }
     }
   }
 }

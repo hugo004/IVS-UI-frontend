@@ -15,29 +15,29 @@
             <v-layout row wrap>
                 <v-flex xs12>
                     <ivs-date-range
-                        labelStartDate="From" 
-                        labelEndDate="To"
-                        :startDate.sync="local_field.from"
-                        :endDate.sync="local_field.to"
+                        :single-date='false'
+                        labelStartDate="Date" 
+                        :startDate.sync="local_field.date"
                     ></ivs-date-range>
                 </v-flex>
                 <v-flex xs12>
-                    <v-text-field
-                        label="Company Name"
-                        v-model="local_field.company"
+                    <v-text-field 
+                        label="Organization"
+                        v-model="local_field.organization"
                     ></v-text-field>
+                </v-flex>
+                <v-flex xs12>
+                    <v-textarea
+                        label=""
+                        v-model="local_field.taskDescription"
+                    ></v-textarea>
                 </v-flex>
                 <v-flex xs12>
                     <v-text-field 
-                        label="Job title"
-                        v-model="local_field.jobTitle"
+                        type="number"
+                        label="Hours Worked"
+                        v-model="local_field.hoursWorked"
                     ></v-text-field>
-                </v-flex>
-                <v-flex xs12>
-                    <v-textarea 
-                        label="Job Duty"
-                        v-model="local_field.jobDuty"
-                    ></v-textarea>
                 </v-flex>
             </v-layout>
         </v-card-text>
@@ -48,7 +48,15 @@
 export default {
     props:
     {
-        field: Object
+        field: {
+          type: Object,
+          default: () => ({
+            'taskDescription': '',
+            'organization': '',
+            'hoursWorked': 0,
+            'date': '',
+          })
+        }
     },
 
     data()
@@ -70,8 +78,9 @@ export default {
             }
         }
     }
-};
+}
 </script>
 
 <style>
+
 </style>
