@@ -174,7 +174,7 @@ export default {
           this.loading = true;
 
           const {educations, workExps, volunteer} = record;
-          await UploadRecord({
+          await UploadAsset({
             'educations': educations,
             'workExps': workExps,
             'volunteerRecords':volunteer
