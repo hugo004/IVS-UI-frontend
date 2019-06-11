@@ -22,3 +22,28 @@ export const LogoutIVS = () => {
     method: 'post'
   });
 };
+
+
+export const Registration = ({
+  userName,
+  password,
+  firstName,
+  lastName,
+  email,
+  phone
+}) => {
+  const data = {
+    'userName': userName,
+    'password': password,
+    'firstName': firstName,
+    'lastName': lastName,
+    'email': email,
+    'phone': phone
+  };
+
+  return axios.request({
+    url:'/admin/userRegistration',
+    method: 'post',
+    data: data
+  });
+};

@@ -5,7 +5,18 @@
         <v-layout align-center justify-center>
           <v-flex xs12 sm8 md4 class="text-xs-left">
             <v-card class="elevation-12">
-              <v-card-title class="primary white--text title">Login Form</v-card-title>
+              <v-card-title class="primary white--text title">
+                Login Form
+                <v-spacer></v-spacer>
+                <v-btn
+                  icon
+                  dark
+                  small
+                  @click="showRegistrationForm()"
+                >
+                  <v-icon>fas fa-user-plus</v-icon>
+                </v-btn>
+              </v-card-title>
               <v-card-text>
                 <v-form
                   v-model="isValid"
@@ -43,21 +54,70 @@
         </v-layout>
       </v-container>
     </v-content>
+
+    <v-dialog
+      persistent
+      v-model="dialog"
+      max-width="500"
+    >
+      <ivs-registration-form 
+        ref="registForm"
+        lazy-validation
+        v-model="registInfo"
+      >
+      <template slot="header-actions">
+        <v-btn
+          icon
+          @click="dialog=false"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </template>
+
+        <template slot="footer-actions">
+          <v-btn
+            block
+            color="primary"
+            :loading="createLoading"
+            @click="registration()"
+          >
+            register
+          </v-btn>
+        </template>
+      </ivs-registration-form>
+    </v-dialog>
   </v-app>
 </template>
 
 <script>
-import { LoginIVS } from "@/api/auth.js";
+import { 
+  LoginIVS,
+  Registration
+} from "@/api/auth.js";
 
 export default {
+  name: 'Login',
+
   data: () => ({
     userName: "",
     password: "",
     isValid: true,
     loading: false,
+    dialog: false,
     requriedRule: [
       v => !!v || 'required'
     ],
+
+    //registration
+    createLoading: false,
+    registInfo: {
+      'userName': '',
+      'password': '',
+      'firstName': '',
+      'lastName': '',
+      'email': '',
+      'phone': ''
+    }
   }),
 
   methods: {
@@ -80,6 +140,31 @@ export default {
         this.$store.commit('setMessage', error);
         this.$store.commit('showNotification');
         this.loading = false;
+      }
+    },
+
+    showRegistrationForm() {
+      this.dialog = true;
+    },
+
+    async registration() {
+      try {
+        if (this.$refs.registForm.validate()) {
+          this.createLoading = true;
+          console.log(this.registInfo);
+          await Registration(this.registInfo);
+
+          this.createLoading = false;
+          this.dialog = false;
+
+          //auto fill after register success
+          this.userName = this.registInfo.userName;
+          this.password = this.registInfo.password;
+        }
+      }
+      catch (error) {
+        this.$store.commit('showError',error);
+        this.createLoading = false;
       }
     }
   }
