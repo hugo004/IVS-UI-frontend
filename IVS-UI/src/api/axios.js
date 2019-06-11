@@ -67,8 +67,7 @@ class HttpRequest
             default:
           }
         }
-    
-        return Promise.reject(error);
+        return Promise.reject(error.response.data.error.toString());
       }
 
     optionConfig(options) 
