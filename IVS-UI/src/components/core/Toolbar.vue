@@ -40,7 +40,7 @@
         <router-link
           v-ripple
           class="toolbar-items"
-          to="/"
+          to="/dashboard"
         >
           <v-icon color="tertiary">mdi-view-dashboard</v-icon>
         </router-link>
