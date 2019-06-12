@@ -46,9 +46,6 @@
 </template>
 
 <script>
-import {
-  GetUserList
-} from '@/api/asset.js'
 
 export default {
   props: {
@@ -58,7 +55,10 @@ export default {
         'name': '',
         'members': []
       })
-    }
+    },
+    
+    loading: Boolean,
+    itemList: Array
   },
 
   model: {
@@ -66,9 +66,7 @@ export default {
     event: 'update'
   },
 
-  async mounted() {
-    this.getUserList();
-  },
+
 
   computed: {
     nameRules() {
@@ -82,22 +80,22 @@ export default {
     userList: []
   }),
 
+  watch: {
+    loading(val) {
+      this.userLoading = val;
+    },
+
+    itemList(val) {
+      this.userList = val;
+    }
+  },
+
   methods: {
     validate() {
       return this.$refs.channelForm.validate();
     },
 
-    async getUserList() {
-      try {
-        this.userLoading = true;
-        this.userList = await GetUserList();
-        this.userLoading = false;
-      }
-      catch (error) {
-        this.$store.commit('showError', error);
-        this.userLoading = false;
-      }
-    }
+
   }
 }
 </script>

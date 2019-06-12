@@ -102,9 +102,13 @@
                 <v-combobox
                   :rules="requiredRule"
                   v-model="newMembers"
+                  :items="invitableList"
+                  itemText="baseInfo.userName"
+                  :loading="userLoading"
+                  return-object
                   multiple
                   chips
-                  label="enter new member id/name e.g u-001/hugo"
+                  label="enter new member id/name e.g u-001/user001"
                 />
                 <v-textarea
                   v-model="inviteMessage"
@@ -163,6 +167,8 @@
         <ivs-channel-create-form 
           ref="form"
           v-model="newChannelInfo"
+          :loading="userLoading"
+          :itemList="userList"
         >
           <template slot="actions">
             <v-spacer></v-spacer>
@@ -202,7 +208,8 @@ import {
   RequestAccessAsset,
   GetChannelMemberAssets,
   SendChannelInvitation,
-  ExitChannel
+  ExitChannel,
+  GetUserList
 } from '@/api/asset.js'
 
 import mixin from './js/mixins.js';
@@ -316,7 +323,12 @@ export default {
 
     //exit channel
     exitLoading: false,
-    isExitChannel: false
+    isExitChannel: false,
+
+    //user list
+    userLoading: false,
+    userList: [],
+    invitableList: []
 
   }),
 
@@ -324,6 +336,8 @@ export default {
     if (this.myChannels.length < 1) {
       this.fetchChannel();
     }
+
+    this.getUserList();
 
   },
 
@@ -493,6 +507,9 @@ export default {
         this.channelAssets = await GetChannelMemberAssets(memberIds);
         this.$store.commit('setLoading', false);
 
+        //make the invitable channel list, which exclude the current channel members
+        this.invitableList = this.userList.filter(e => !memberIds.includes(e.userId));
+
       }
       catch (error) {
         this.$store.commit('showError', error);
@@ -517,9 +534,12 @@ export default {
         if (this.$refs.inviteForm.validate()) {
           this.inviteLoading = true;
 
+          //get the members id
+          let memberIds = this.newMembers.map(e => e.userId);
+
           await SendChannelInvitation({
             'channelId': channel.channelId,
-            'newMemberIds': this.newMembers,
+            'newMemberIds': memberIds,
             'remarks': this.inviteMessage
           });
 
@@ -563,6 +583,18 @@ export default {
       catch (error) {
         this.$store.commit('showError', error);
         this.exitLoading = false;
+      }
+    },
+
+    async getUserList() {
+      try {
+        this.userLoading = true;
+        this.userList = await GetUserList();
+        this.userLoading = false;
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+        this.userLoading = false;
       }
     }
   }
