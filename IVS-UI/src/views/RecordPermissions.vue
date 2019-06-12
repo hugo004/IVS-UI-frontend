@@ -114,33 +114,39 @@
             <v-text-field 
               v-model="newRequest.eventName"
               :rules="requiredRule"
-              label="Event Name"
+              label="*Event Name"
             />
 
             <v-combobox 
-              v-model="newRequest.receiverId"
-              :rules="requiredRule"
-              label="Receiver Id"
-            />
-
-            <v-text-field 
-              v-model="newRequest.receiverName"
-              :rules="requiredRule"
-              label="Receiver Name"
+              v-model="selectedUser"
+              :rules="[v => !!v]"
+              :items="userList"
+              item-text="baseInfo.userName"
+              :loading="userLoading"
+              label="*Select the receiver"
+              return-object
+              @change="onUserSelect"
             />
 
             <v-select 
               v-model="newRequest.assetName"
               :items="assetCategory"
               :rules="requiredRule"
-              label="Asset Name"
+              label="*Asset Name"
+              @change="fetchUserAsset"
+              :disabled="disableCateogry"
             />
 
             <v-combobox 
-              v-model="newRequest.assetId"
+              v-model="selectedAssets"
               :rules="requiredRule"
-              label="Asset Id"
+              :items="assetList"
+              item-text="name"
+              :loading="assetLoading"
+              chips
+              label="Select asset"
               multiple
+              @change="onAssetSelect"
             />
 
             <v-textarea 
@@ -178,7 +184,9 @@ import {
   GetAsset,
   RequestAccessAsset,
   GetAccessRequestList,
-  RevokeAccessAsset
+  RevokeAccessAsset,
+  GetUserList,
+  GetAssetList
 } from '@/api/asset.js'
 
 import mixin from './js/mixins.js';
@@ -301,7 +309,18 @@ export default {
     authorizedAsset: new Map(),
     myAuthenUserList: [],
     seletedUserInfo: {},
-    myAuthenAssetLoading: false
+    myAuthenAssetLoading: false,
+
+    //user list
+    userLoading: false,
+    userList: [],
+    selectedUserId: '',
+    selectedUser: [],
+
+    //asset list
+    assetList: [],
+    assetLoading: false,
+    selectedAssets: []
   }),
 
   async mounted() {
@@ -312,6 +331,10 @@ export default {
     await this.fetchAuthorizeItem();
 
     this.fetchMyAuthorizedItem();
+
+    this.getUserList();
+
+    
   },
 
   computed: {
@@ -322,7 +345,6 @@ export default {
     myAuthorizedAsset() {
       const {id} = this.seletedUserInfo;
       let myAsset = this.authorizedAsset.get(id);
-      console.log(myAsset);
 
       if (myAsset) {
         let assetMap = new Map();
@@ -338,6 +360,14 @@ export default {
       
       return new Map();
     },
+
+    disableCateogry() {
+      if (this.selectedUserId.length > 0) {
+        return false;
+      }
+
+      return true;
+    }
   },
 
   methods: {
@@ -508,12 +538,6 @@ export default {
       }
     },
 
-    async fetchReceiverList() {
-      //get all register user
-
-      //for display in the receiver field (name, id like github invite member)
-    },
-
     selectAuthorizeData(val) {
       this.authorizedData = val.data;
     },
@@ -638,6 +662,48 @@ export default {
       catch (error) {
         this.$store.commit('showError', error);
       }
+    },
+
+    async getUserList() {
+      try {
+        this.userLoading = true;
+        this.userList = await GetUserList();
+        this.userLoading = false;
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+        this.userLoading = false;
+      }
+    },
+
+    onUserSelect(val) {
+      if (val) {
+        this.newRequest.receiverId = val.userId;
+        this.newRequest.receiverName = val.baseInfo.userName;
+        this.selectedUserId = val.userId;
+
+        this.selectedUser = val.baseInfo.userName;
+      }
+    },
+
+    onAssetSelect(val) {
+      if (val) {
+        this.newRequest.assetId = val.map(e => e.assetId);
+      }
+    },
+
+    async fetchUserAsset(assetName) {
+      if (this.selectedUserId) {
+        this.assetLoading = true;
+
+        this.assetList = await GetAssetList({
+          'assetName': assetName,
+          'userId': this.selectedUserId
+        });
+
+        this.assetLoading = false;
+      }
+
     }
 
   }

@@ -204,3 +204,26 @@ export const GetHistoryData = () => {
     method: 'get'
   });
 }
+
+export const GetUserList = () => {
+  return axios.request({
+    url: '/admin/getUsers',
+    method: 'get'
+  });
+};
+
+export const GetAssetList = ({
+  assetName,
+  userId
+}) => {
+  const params = {
+    assetName: assetName,
+    userId: userId
+  };
+
+  return axios.request({
+    url: '/admin/getUserAsset',
+    method: 'get',
+    params: params
+  });
+};

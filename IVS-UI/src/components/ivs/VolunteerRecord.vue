@@ -22,13 +22,19 @@
                 </v-flex>
                 <v-flex xs12>
                     <v-text-field 
+                        label="Activity name"
+                        v-model="local_field.name"
+                    ></v-text-field>
+                </v-flex>
+                <v-flex xs12>
+                    <v-text-field 
                         label="Organization"
                         v-model="local_field.organization"
                     ></v-text-field>
                 </v-flex>
                 <v-flex xs12>
                     <v-textarea
-                        label=""
+                        label="Task description"
                         v-model="local_field.taskDescription"
                     ></v-textarea>
                 </v-flex>
@@ -55,6 +61,7 @@ export default {
             'organization': '',
             'hoursWorked': 0,
             'date': '',
+            'name': ''
           })
         }
     },

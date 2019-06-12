@@ -182,6 +182,8 @@ export default {
 
           this.loading = false;
           this.upload = false;
+
+          this.$store.commit('showSuccess', 'Record Uploaded');
         }
       }
       catch (error) {

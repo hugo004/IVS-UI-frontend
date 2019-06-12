@@ -171,24 +171,14 @@ export default {
 
         },
 
-        UIDGenerator(prefix, length=10)
-        {
-            var text = "";
-            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-            for (var i = 0; i < length; i++)
-                text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-            return `${prefix}-${text}`;
-        },
-
         addEducations()
         {
             let obj = {
                 school: "",
                 major: "",
                 from: "",
-                to: ""
+                to: "",
+                gpa: 0.0
             };
             this.record.educations.push(obj);
         },
@@ -211,6 +201,7 @@ export default {
                 'organization': '',
                 'hoursWorked': 0,
                 'date': '',
+                'name': ''
             };
 
             this.record.volunteer.push(obj);
