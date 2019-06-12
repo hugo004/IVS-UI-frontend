@@ -6,7 +6,15 @@
       class="text-capitalize"
     >
       <h3 class="title font-weight-light">Members:</h3>
-      <p class="category d-inline-flex font-weight-light">{{ channelMembers }}</p>
+      <p class="category d-inline-flex font-weight-light">
+        <span
+          v-for="(name,index) in channelMembers"
+          :key="index"
+          class="mr-2"
+        >
+          {{ name }}
+        </span> 
+      </p>
 
       <template slot="actions">
         <v-icon
@@ -44,18 +52,17 @@ export default {
     }
   },
 
-  computed:
-  {
-    channelMembers()
-    {
+  computed: {
+    channelMembers() {
       let members = this.channel.members || [];
       let names = [];
       members.forEach(e => {
-        let {firstName, lastName} = e.baseInfo;
-        names.push(`${lastName} ${firstName}`);
+        let {userName} = e.baseInfo;
+        names.push(userName);
       });
 
-      return names.toString();
+      // return names.toString();
+      return names;
     }
   }
 }
