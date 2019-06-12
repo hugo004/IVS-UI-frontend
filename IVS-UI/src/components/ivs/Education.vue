@@ -28,6 +28,13 @@
                         placeholder="e.g course title "
                     ></v-textarea>
                 </v-flex>
+                <v-flex xs12>
+                    <v-text-field 
+                        label="GPA"
+                        v-model="local_field.gpa"
+                        type="number"
+                    ></v-text-field>
+                </v-flex>
             </v-layout>
             <v-flex xs12>
                 <v-layout>

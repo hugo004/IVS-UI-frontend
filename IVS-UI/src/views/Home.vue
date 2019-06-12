@@ -71,11 +71,12 @@
       v-model="upload"
       persistent
       scrollable
+      max-width="800"
     >
       <v-card>
         <v-card-text>
           <ivs-upload-record 
-            @save="saveRecord" 
+            :myRecord.sync="record" 
             class="text-xs-left"
             :loading="loading"
           />
@@ -84,11 +85,17 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn 
-            flat 
-            color="secondary"
+            outline 
             @click="upload=false"
           >
             close
+          </v-btn>
+
+          <v-btn color="primary" 
+          @click="saveRecord(record)" 
+          :loading="loading"
+          >
+            Create
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -143,7 +150,9 @@ export default {
       ],
       items: [],
 
-      channels: []
+      channels: [],
+
+      record: null
 
 
     }

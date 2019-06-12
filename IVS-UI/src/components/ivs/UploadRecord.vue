@@ -4,42 +4,6 @@
     vertical 
     class="elevation-0"
 >
-    <!-- <v-stepper-step :complete="currStep > 1" step="1" editable>
-        Basic Info
-    </v-stepper-step>
-
-    <v-stepper-content step="1">
-        <v-layout row wrap>
-            <v-flex xs12>
-                <v-text-field 
-                    label="Name" 
-                    v-model="record.name"
-                ></v-text-field>
-            </v-flex>
-            <v-flex xs12>
-                <v-text-field 
-                    label="Phone"
-                    v-model="record.phone"
-                ></v-text-field>
-            </v-flex>
-            <v-flex xs12>
-                <v-text-field 
-                    label="Email"
-                    v-model="record.email"
-                ></v-text-field>
-            </v-flex>
-            <v-flex xs12>
-                <v-text-field 
-                    label="Location"
-                    v-model="record.location"
-                ></v-text-field>
-            </v-flex>
-        </v-layout>
-
-        <v-btn color="green" dark @click="currStep = 2">
-            Next
-        </v-btn>
-    </v-stepper-content> -->
 
     <v-stepper-step :complete="currStep > 1" :step="1" editable>
         Education
@@ -103,22 +67,8 @@
             ></ivs-work-experience>
         </div>
         <v-btn color="secondary" @click="currStep = 2">Previous</v-btn>
-        <!-- <v-btn color="primary" @click="currStep = 4">Next</v-btn> -->
-        <v-btn color="primary" @click="saveRecord()" :loading="createLoding">Create</v-btn>
     </v-stepper-content>
 
-    <!-- <v-stepper-step :step="4" editable>
-        Work Skills
-    </v-stepper-step>
-    <v-stepper-content :step="4">
-        <v-textarea 
-            v-model="record.workSkills"
-            label="Skills" 
-            placeholder="e.g. computer skill, programming skill"
-        />
-        <v-btn color="secondary" @click="currStep = 3">Previous</v-btn>
-        <v-btn color="primary" @click="saveRecord()" :loading="createLoding">Create</v-btn>
-    </v-stepper-content> -->
 </v-stepper>
 </template>
 
@@ -128,20 +78,23 @@ import { CreateRecord } from '@/api/record.js';
 
 export default {
     name: "UploadRecord",
+    
     props: {
-        loading: Boolean
+        myRecord: Object
+    },
+
+    model: {
+        prop: 'myRecord',
+        event: 'update'
     },
 
     created() {
-        this.addEducations();
-        this.addWorkExps();
-        this.addVolunteerRecord();
+
     },
 
     data() {
         return {
             currStep: 1,
-            createLoding: this.loading,
             record: {
                 educations: [],
                 volunteer: [],
@@ -153,9 +106,13 @@ export default {
     },
 
     watch: {
-        loading(val) {
-            this.createLoding = val;
+        record: {
+            deep: true,
+            handler(val) {
+                this.$emit('update:myRecord', val);
+            }
         }
+
     },
 
     methods:
