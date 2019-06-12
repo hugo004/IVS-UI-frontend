@@ -22,10 +22,10 @@
         <material-card
           color="green"
           title="Transaction Stats"
-          text="Latest transaction on, Sep 20"
+          :text="`Latest transaction on, ${latestTranstionTime}`"
         >
           <template slot="header-actions">
-            <v-text-field append-icon="search"></v-text-field>
+            <!-- <v-text-field append-icon="search"></v-text-field> -->
             <v-btn  
               round 
               color="green"
@@ -151,12 +151,19 @@ export default {
   
   async mounted()
   {
-
-
     this.fetchHistoryTransaction();
 
     this.fetchChannel();
 
+  },
+
+  computed: {
+    latestTranstionTime() {
+      if (this.items.length > 0) {
+        let last = this.items[this.items.length - 1];
+        return this.transationDate(last.transactionTimestamp);
+      }
+    }
   },
 
   methods: {
