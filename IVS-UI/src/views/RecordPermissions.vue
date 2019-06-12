@@ -103,7 +103,7 @@
     </v-layout>
 
     <!-- request access form -->
-    <v-dialog v-model="dialog">
+    <v-dialog v-model="dialog" max-width="900">
       <v-form
         v-model="isValid"
         lazy-validation
