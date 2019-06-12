@@ -197,3 +197,10 @@ export const UploadAsset = ({
     data: data
   });
 }
+
+export const GetHistoryData = () => {
+  return axios.request({
+    url: '/getHistory',
+    method: 'get'
+  });
+}
