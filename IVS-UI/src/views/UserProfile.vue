@@ -9,7 +9,7 @@
     >
       <v-flex
         xs12
-        md8
+        md10
       >
 
         <ivs-authorized-table 
@@ -22,7 +22,7 @@
       </v-flex>
       <v-flex
         xs12
-        md4
+        md2
       >
         <material-card class="v-card-profile">
           <v-avatar

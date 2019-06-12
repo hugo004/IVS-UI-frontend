@@ -555,6 +555,9 @@ export default {
           let integratedMap = new Map();
 
           requestList.forEach(e => {
+            //ignore channel invitation request
+            if (e.requestType == 'CHANNEL') return;
+
             let obj = {
               'requestId': e.requestId
             };
