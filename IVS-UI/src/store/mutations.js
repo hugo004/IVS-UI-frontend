@@ -53,7 +53,8 @@ export default {
 
     state.top = true;
     state.right = true;
-    state.snackbar = true  },
+    state.snackbar = true  
+  },
 
   showWarning(state, msg) {
     state.message = msg;
@@ -61,5 +62,6 @@ export default {
     
     state.top = true;
     state.right = true;
-    state.snackbar = true  },
+    state.snackbar = true  
+  },
 }

@@ -25,10 +25,14 @@
           <v-flex xs12>
             <v-combobox 
               v-model="channelInfo.members"
+              :items="userList"
+              itemText="baseInfo.userName"
+              :loading="userLoading"
               label="Invite channel member"
-              placeholder="enter member id e.g. u-001"
+              placeholder="enter member id/name e.g. u-001/user001"
               multiple
               chips
+              return-object
             />
           </v-flex>
         </v-layout>
@@ -42,6 +46,10 @@
 </template>
 
 <script>
+import {
+  GetUserList
+} from '@/api/asset.js'
+
 export default {
   props: {
     channelInfo: {
@@ -58,6 +66,10 @@ export default {
     event: 'update'
   },
 
+  async mounted() {
+    this.getUserList();
+  },
+
   computed: {
     nameRules() {
       return [ v => !!v || 'required'];
@@ -65,12 +77,26 @@ export default {
   },
 
   data: () => ({
-    isValidForm: true
+    isValidForm: true,
+    userLoading: false,
+    userList: []
   }),
 
   methods: {
     validate() {
       return this.$refs.channelForm.validate();
+    },
+
+    async getUserList() {
+      try {
+        this.userLoading = true;
+        this.userList = await GetUserList();
+        this.userLoading = false;
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+        this.userLoading = false;
+      }
     }
   }
 }

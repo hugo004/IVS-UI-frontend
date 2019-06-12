@@ -16,7 +16,7 @@
             prepend-icon="person"
             v-model="registInfo.userName"
             :rules="requiredRule"
-            label="Username" 
+            label="*Username" 
             type="text"
             ></v-text-field>
 
@@ -24,7 +24,7 @@
             v-model="registInfo.password"
             :rules="requiredRule"
             prepend-icon="lock"
-            label="Password"
+            label="*Password"
             type="password"
           ></v-text-field>
 
@@ -32,7 +32,7 @@
             v-model="confirmPswd"
             :rules="passwordRules"
             prepend-icon="lock"
-            label="Confirm Password"
+            label="*Confirm Password"
             type="password"
           ></v-text-field>
 
@@ -41,14 +41,14 @@
               prepend-icon="person"
               v-model="registInfo.firstName"
               :rules="requiredRule"
-              label="First Name" 
+              label="*First Name" 
               type="text"
               ></v-text-field>
               <span class="mx-2"></span>
             <v-text-field 
               v-model="registInfo.lastName"
               :rules="requiredRule"
-              label="Last Name" 
+              label="*Last Name" 
               type="text"
               ></v-text-field>
           </v-layout>
@@ -56,7 +56,6 @@
           <v-text-field 
             prepend-icon="email"
             v-model="registInfo.email"
-            :rules="requiredRule"
             label="Email" 
             type="email"
             ></v-text-field>
@@ -64,7 +63,6 @@
           <v-text-field 
             prepend-icon="phone"
             v-model="registInfo.phone"
-            :rules="requiredRule"
             label="Phone" 
             type="text"
             mask="#### ####"

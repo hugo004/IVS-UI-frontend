@@ -404,26 +404,34 @@ export default {
     },
 
     async onChannelCreate() {
-      if (this.$refs.form.validate()) {
+      try{
+        if (this.$refs.form.validate()) {
 
-        // let name = this.newChannelInfo.name;
-        // let members = this.newChannelInfo.members;
-        const {name, members} = this.newChannelInfo;
-        
-        //call api and turn on loading effect
-        this.createLoading = true;
+          const {name, members} = this.newChannelInfo;
 
-        await CreateChannel({
-          'name': name,
-          'members': members
-        });
+          //get the members id
+          let memberIds = members.map(e => e.userId);
+          
+          //call api and turn on loading effect
+          this.createLoading = true;
 
+          await CreateChannel({
+            'name': name,
+            'members': memberIds
+          });
+
+          this.createLoading = false;
+          this.dialog = false;
+
+          //display message
+          this.$store.commit('showSuccess', 'Channel created');
+
+          this.fetchChannel();
+        }
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
         this.createLoading = false;
-        this.dialog = false;
-
-        //display message
-        this.$store.commit('setMeesage', 'Channel created');
-        this.$store.commit('showNotification', ['top', 'right']);
       }
     },
 
