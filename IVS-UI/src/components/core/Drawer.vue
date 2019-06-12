@@ -18,30 +18,16 @@
         tag="v-list"
         column
       >
+
         <v-list-tile avatar>
-          <v-list-tile-avatar
-            color="white"
-          >
-            <v-img
-              :src="logo"
-              height="34"
-              contain
-            />
-          </v-list-tile-avatar>
-          <v-list-tile-title class="title">
-            {{ username }}
-          </v-list-tile-title>
-        </v-list-tile>
-        <v-divider/>
-        <v-list-tile
-          v-if="responsive"
-        >
-          <v-text-field
-            class="purple-input search-input"
-            label="Search..."
-            color="purple"
+          <v-list-tile-action>
+          </v-list-tile-action>
+          <v-list-tile-title
+            class="title"
+            v-text="username"
           />
         </v-list-tile>
+        <v-divider/>
         <v-list-tile
           v-for="(link, i) in links"
           :key="i"
@@ -71,7 +57,7 @@ import {
 
 export default {
   data: () => ({
-    logo: '',
+    logo: '../../assets/user_icon.png',
     links: [
       {
         to: '/dashboard',
@@ -140,7 +126,7 @@ export default {
       if (localStorage.getItem('userInfo')) {
         let userInfoStr = localStorage.getItem('userInfo');
         let userInfo = JSON.parse(userInfoStr).baseInfo;
-        return `${userInfo.lastName} ${userInfo.firstName}`;
+        return userInfo.userName;
       }
 
       return '';

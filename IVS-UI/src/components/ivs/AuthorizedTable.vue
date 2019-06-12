@@ -1,5 +1,5 @@
 <template>
-  <material-card>
+  <material-card v-bind="$attrs">
 
     <!-- pass all slot -->
       <slot 
@@ -12,7 +12,8 @@
         dark
         icons-and-text
         show-arrows
-        color="primary"
+        :color="tabColor"
+        :slot="offset"
       >
         <v-tabs-slider color="white"></v-tabs-slider>
         <!-- the category display authorize item only -->
@@ -34,6 +35,8 @@
               <v-data-table
                 :headers="tableHeader(key)"
                 :items="tableItems(key)"
+                v-bind="$attrs"
+                :style="tableStyle"
               >
                 <template v-slot:items="props">
                   <tr>
@@ -72,7 +75,13 @@ export default {
     showAction: Boolean,
     loading: Boolean,
     tableData: Map,
-    
+    offset: String,
+    tabColor: {
+      type: String,
+      default: 'primary'
+    },
+
+    tableStyle: String
 
   },
 

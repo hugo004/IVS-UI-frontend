@@ -227,3 +227,10 @@ export const GetAssetList = ({
     params: params
   });
 };
+
+export const GetMyProfile = () => {
+  return axios.request({
+    url: '/getProfile',
+    method: 'get'
+  });
+}
