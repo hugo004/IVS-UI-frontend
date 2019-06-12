@@ -4,11 +4,6 @@
  * official documentation https://router.vuejs.org/en/
  */
 export default [
-  // {
-  //   path: '/dashboard',
-  //   // Relative to /src/views
-  //   view: 'Dashboard'
-  // },
   {
     path: '/login',
     view: 'Login'
@@ -28,16 +23,8 @@ export default [
     view: 'TableList'
   },
   {
-    path: '/typography',
-    view: 'Typography'
-  },
-  {
     path: '/icons',
     view: 'Icons'
-  },
-  {
-    path: '/maps',
-    view: 'Maps'
   },
   {
     path: '/notifications',
