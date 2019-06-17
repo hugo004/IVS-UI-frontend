@@ -58,7 +58,7 @@
     <v-dialog
       persistent
       v-model="dialog"
-      max-width="500"
+      max-width="800"
     >
       <ivs-registration-form 
         ref="registForm"

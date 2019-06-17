@@ -181,29 +181,13 @@ export default {
     dataTimeString(dateString) {
       return new Date(dateString).toLocaleDateString();
     },
-    test() {
-      console.log('s')
-    },
-    action(item) {
-      if (this.showAction) {
-        return `
-          <td class="text-xs-right">
-              <a
-                class="v-btn v-btn--small theme--light primary"
-                @click.prevent="test()"
-              >revoke</a>
-            </td>
-        `;
-      }
-
-      return '';
-    },
 
     content(name, item) {
       let dataList = [];
       if (name == 'Education') {
         dataList.push(item.info.school);
         dataList.push(item.info.major);
+        dataList.push(item.info.gpa);
         dataList.push(this.dataTimeString(item.info.to));
         dataList.push(this.dataTimeString(item.info.from));
       }
@@ -215,6 +199,11 @@ export default {
         dataList.push(item.info.jobDuty);
       }
       else if (name == 'VolunteerRecord') {
+        dataList.push(this.dataTimeString(item.info.from));
+        dataList.push(item.name);
+        dataList.push(item.info.organization);
+        dataList.push(item.info.taskDescription);
+        dataList.push(item.info.hoursWorked);
       }
 
       return dataList;

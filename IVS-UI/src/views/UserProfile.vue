@@ -17,7 +17,7 @@
           hide-actions
           offset="offset"
           tabColor="dark-grey"
-          tableStyle="height:35vh"
+          tableStyle="height:31vh"
         />
       </v-flex>
       <v-flex

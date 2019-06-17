@@ -13,7 +13,7 @@
     <v-flex xs12>
       <material-card 
         title="Notifications"
-        text="Last updated at xxx"
+        :text="`Last updated at ${lastUpdated}`"
       >        
         <v-btn
           slot="header-actions" 
@@ -130,7 +130,20 @@ export default {
     this.fetchRequestList();
   },
 
+  computed: {
+    lastUpdated() {
+      if (this.tableItems.length > 0) {
+        let last = this.tableItems[this.tableItems.length - 1];
+        return this.transationDate(last.createTime);
+      }
+    }
+  },
+
   methods: {
+    transationDate(dateStr) {
+      return new Date(dateStr).toLocaleString()
+    },
+
     isUndetermined(status) {
       if (status.toLowerCase() == "undetermined")
       {

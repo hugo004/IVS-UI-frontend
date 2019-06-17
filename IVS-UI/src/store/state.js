@@ -21,6 +21,12 @@ export default {
       },
 
       {
+        text: 'GPA',
+        value: 'gpa',
+        sortable: false
+      },
+
+      {
         text: 'From',
         value: 'from',
         sortable: false
@@ -65,6 +71,11 @@ export default {
     ]],
     ['VolunteerRecord', [
       {
+        text: 'Date',
+        value: 'date',
+        sortable: true
+      },
+      {
         text: 'Event Name',
         value: 'evetn name',
         sortable: false
@@ -79,6 +90,11 @@ export default {
       {
         text: 'Description',
         value: 'desc',
+        sortable: false
+      },
+      {
+        text: 'Hours Worked',
+        value: 'hs',
         sortable: false
       }
     ]]

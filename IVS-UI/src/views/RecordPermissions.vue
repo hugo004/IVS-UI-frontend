@@ -20,7 +20,7 @@
         </v-btn>
       </v-flex>
       <v-flex>
-        <material-card>
+        <!-- <material-card>
           <template slot="header">
             <v-select 
               :items="authorizeItem"
@@ -41,7 +41,6 @@
             color="primary"
           >
             <v-tabs-slider color="white"></v-tabs-slider>
-            <!-- the category display authorize item only -->
             <v-tab 
               v-for="(tab, index) in authorizedData.keys()" 
               :key="index"
@@ -69,7 +68,25 @@
               </v-card>
             </v-tab-item>
           </v-tabs>
-        </material-card>
+        </material-card> -->
+        <ivs-authorized-table 
+          :tableData="authorizedData"
+        >
+          <template slot="header">
+
+            <v-select 
+              :items="authorizeItem"
+              itemText="owner"
+              label="Authorize people"
+              color="black"
+              :loading="loading"
+              solo
+              dark
+              return-object
+              @change="selectAuthorizeData"
+            />
+          </template>
+        </ivs-authorized-table>
       </v-flex>
 
       <v-flex>
@@ -103,7 +120,11 @@
     </v-layout>
 
     <!-- request access form -->
-    <v-dialog v-model="dialog" max-width="900">
+    <v-dialog 
+      v-model="dialog"
+       max-width="800"
+       persistent
+      >
       <v-form
         v-model="isValid"
         lazy-validation
@@ -214,6 +235,11 @@ export default {
       {
         text: 'Major',
         value: 'major',
+        sortable: false
+      },
+      {
+        text: 'GPA',
+        value: 'gpa',
         sortable: false
       },
 
@@ -388,6 +414,7 @@ export default {
         return `
           <td>${item.info.school}</td>
           <td>${item.info.major}</td>
+          <td>${item.info.gpa}</td>
           <td>${this.dataTimeString(item.info.to)}</td>
           <td>${this.dataTimeString(item.info.from)}</td>
         `;
