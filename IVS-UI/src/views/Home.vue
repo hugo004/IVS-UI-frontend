@@ -75,11 +75,17 @@
     >
       <v-card>
         <v-card-text>
-          <ivs-upload-record 
+          <!-- <ivs-upload-record 
             :myRecord.sync="record" 
             class="text-xs-left"
             :loading="loading"
-          />
+          /> -->
+          <input
+            type="file" 
+            label="choose file" 
+            ref="file"
+            multiple
+            />
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
@@ -106,7 +112,8 @@
 <script>
 import { 
   CreateRecord,
-  GetRecords
+  GetRecords,
+  UploadRecord
 } from "@/api/record.js";
 
 import {
@@ -152,7 +159,7 @@ export default {
 
       channels: [],
 
-      record: null
+      record: null,
 
 
     }
@@ -176,24 +183,43 @@ export default {
   },
 
   methods: {
+    async selectFile(e) {
+      // console.log(e.target.files[0]);
+      // let file = e.target.files[0]
+      // let base64Str = await this.getBase64(file);
+      // console.log(base64Str);
+      await UploadRecord(e.target.files);
+    },
+
+    getBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    },
+
     async saveRecord(record){
       try {
         console.log(record);
-        if (record) {
+        // if (record) {
           this.loading = true;
 
-          const {educations, workExps, volunteer} = record;
-          await UploadAsset({
-            'educations': educations,
-            'workExps': workExps,
-            'volunteerRecords':volunteer
-          });
+          // const {educations, workExps, volunteer} = record;
+          // await UploadAsset({
+          //   'educations': educations,
+          //   'workExps': workExps,
+          //   'volunteerRecords':volunteer
+          // });
+          let files = this.$refs.file.files;
+          await UploadRecord(files);
 
           this.loading = false;
           this.upload = false;
 
           this.$store.commit('showSuccess', 'Record Uploaded');
-        }
+        // }
       }
       catch (error) {
         this.$store.commit('showError', error);

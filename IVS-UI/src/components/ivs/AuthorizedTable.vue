@@ -39,7 +39,7 @@
                 :style="tableStyle"
               >
                 <template v-slot:items="props">
-                  <tr>
+                  <tr @click="onItemClick(props.item)">
                     <td 
                       v-for="(data,index) in content(key, props.item)"
                       :key="index"
@@ -51,7 +51,7 @@
                         <v-btn
                           small
                           color="primary"
-                          @click="$emit('click', props.item)"
+                          @click.stop="$emit('click', props.item)"
                         >
                           revoke
                         </v-btn>
@@ -64,6 +64,40 @@
           </v-card>
         </v-tab-item>
       </v-tabs>
+
+      <v-dialog
+        v-model="dialog"
+        fullscreen
+        transition="dialog-bottom-transition"
+      >
+        <v-layout fill-height column>
+          <v-card
+            height="50px"
+            color="dark-grey"
+            class="elevation-5 text-xs-center"
+            dark
+          >
+            <span class="title dark-grey">{{ fileName }}</span>
+            <v-btn 
+              @click="dialog=false" 
+              fab
+              top
+              right
+              absolute
+              class="mt-5"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-card>
+
+          <iframe class="black" 
+            :src="fileUrl" 
+            frameborder="0" 
+            height="100%" 
+            align="middle"
+            />
+        </v-layout>
+      </v-dialog>
   </material-card>
 </template>
 
@@ -86,87 +120,9 @@ export default {
   },
 
   data: () => ({
-
-    //education
-    educationHeaders: [
-      {
-        text: 'School',
-        value: 'school',
-        sortable: false
-      },
-
-      {
-        text: 'Major',
-        value: 'major',
-        sortable: false
-      },
-
-      {
-        text: 'From',
-        value: 'from',
-        sortable: false
-      },
-
-      {
-        text: 'To',
-        value: 'to',
-        sortable: false
-      }
-    ],
-
-    //work exp
-    workExpHeaders: [
-      {
-        text: 'Name',
-        value: 'cname',
-        sortable: false
-      },
-
-      {
-        text: 'From',
-        value: 'workfrom',
-        sortable: false
-      },
-
-      {
-        text: 'To',
-        value: 'workto',
-        sortable: false
-      },
-
-      {
-        text: 'Job Title',
-        value: 'job',
-        sortable: false
-      },
-
-      {
-        text: 'Job Duty',
-        value: 'jobduty',
-        sortable: false
-      },
-    ],
-
-    //vomlunteer record
-    volunteerHeaders: [
-      {
-        text: 'Event Name',
-        value: 'evetn name',
-        sortable: false
-      },
-
-      {
-        text: 'Hold By',
-        value: 'holde by',
-        sortable: false
-      },
-
-      {
-        text: 'Description',
-        value: 'desc',
-        sortable: false
-      }
-    ],
+    dialog: false,
+    fileUrl: '',
+    fileName: ''
   }),
 
   methods: {
@@ -205,9 +161,30 @@ export default {
         dataList.push(item.info.taskDescription);
         dataList.push(item.info.hoursWorked);
       }
+      else if (name == 'Record') {
+        dataList.push(this.dataTimeString(item.createTime));
+        dataList.push(item.name);
+        dataList.push(item.fileType);
+      }
 
       return dataList;
     },
+
+    onItemClick(item) {
+      const {$class} = item;
+      if ($class == 'org.example.ivsnetwork.Record') {
+        this.viewRecord(item);
+      }
+    },
+
+    viewRecord(data) {
+      const {fileType, encrypted, name} = data;
+      let fileUrl = `data:${fileType};base64,${encrypted}#toolbar=0&navpanes=0&scrollbar=0`;
+      
+      this.fileName = name;
+      this.fileUrl = fileUrl;
+      this.dialog = true;
+    }
   }
 }
 </script>

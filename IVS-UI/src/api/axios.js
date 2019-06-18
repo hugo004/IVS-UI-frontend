@@ -125,6 +125,25 @@ class HttpRequest
 
     }
 
+    uploadFile(url, formData, option)
+    {
+      option = Object.assign(this.config(), {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (localStorage.getItem("token"))
+      {
+          option.headers.authorization = `Bearer ${localStorage.getItem("token")}`;
+      }
+
+      const instance = axios.create();
+      this.interceptors(instance);
+      
+      return instance.post(url, formData, option);
+    }
+
 }
 
 export default HttpRequest;

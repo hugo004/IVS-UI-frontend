@@ -97,6 +97,24 @@ export default {
         value: 'hs',
         sortable: false
       }
+    ]],
+    ['Record', [
+      {
+        text: 'Date',
+        value: 'date',
+        sortable: true
+      },
+      {
+        text: 'File Name',
+        value: 'fn',
+        sortable: false
+      },
+
+      {
+        text: 'File Type',
+        value: 'ft',
+        sortable: false
+      }
     ]]
   ]),
 

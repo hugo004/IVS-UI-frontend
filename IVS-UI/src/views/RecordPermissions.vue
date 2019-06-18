@@ -20,55 +20,6 @@
         </v-btn>
       </v-flex>
       <v-flex>
-        <!-- <material-card>
-          <template slot="header">
-            <v-select 
-              :items="authorizeItem"
-              itemText="owner"
-              label="Authorize people"
-              color="black"
-              :loading="loading"
-              solo
-              dark
-              return-object
-              @change="selectAuthorizeData"
-            />
-          </template>
-          <v-tabs
-            dark
-            icons-and-text
-            show-arrows
-            color="primary"
-          >
-            <v-tabs-slider color="white"></v-tabs-slider>
-            <v-tab 
-              v-for="(tab, index) in authorizedData.keys()" 
-              :key="index"
-              :href="`#tab-${index}`"
-            >
-             {{ tab }}
-            </v-tab>
-
-            <v-tab-item
-              v-for="(key, i) in authorizedData.keys()" 
-              :key="i"
-              :value="`tab-${i}`"
-            >
-              <v-card>
-                <v-card-text>
-                  <v-data-table
-                    :headers="tableHeader(key)"
-                    :items="tableItems(key)"
-                  >
-                    <template v-slot:items="props">
-                      <tr v-html="tableData(key, props.item)"></tr>
-                    </template>
-                  </v-data-table>
-                </v-card-text>
-              </v-card>
-            </v-tab-item>
-          </v-tabs>
-        </material-card> -->
         <ivs-authorized-table 
           :tableData="authorizedData"
         >
@@ -224,97 +175,6 @@ export default {
     assetCategory: [],
     loading: false,
     
-    //education
-    educationHeaders: [
-      {
-        text: 'School',
-        value: 'school',
-        sortable: false
-      },
-
-      {
-        text: 'Major',
-        value: 'major',
-        sortable: false
-      },
-      {
-        text: 'GPA',
-        value: 'gpa',
-        sortable: false
-      },
-
-      {
-        text: 'From',
-        value: 'from',
-        sortable: false
-      },
-
-      {
-        text: 'To',
-        value: 'to',
-        sortable: false
-      }
-    ],
-
-    //work exp
-    workExpHeaders: [
-      {
-        text: 'Name',
-        value: 'cname',
-        sortable: false
-      },
-
-      {
-        text: 'From',
-        value: 'workfrom',
-        sortable: false
-      },
-
-      {
-        text: 'To',
-        value: 'workto',
-        sortable: false
-      },
-
-      {
-        text: 'Job Title',
-        value: 'job',
-        sortable: false
-      },
-
-      // {
-      //   text: 'Skill',
-      //   value: 'jobs kill',
-      //   sortable: false
-      // },
-
-      {
-        text: 'Job Duty',
-        value: 'jobduty',
-        sortable: false
-      },
-    ],
-
-    //vomlunteer record
-    volunteerHeaders: [
-      {
-        text: 'Event Name',
-        value: 'evetn name',
-        sortable: false
-      },
-
-      {
-        text: 'Hold By',
-        value: 'holde by',
-        sortable: false
-      },
-
-      {
-        text: 'Description',
-        value: 'desc',
-        sortable: false
-      }
-    ],
 
     authorizedData: new Map(),
 
@@ -405,35 +265,7 @@ export default {
       return this.authorizedData.get(key).items || [];
     },
 
-    dataTimeString(dateString) {
-      return new Date(dateString).toLocaleDateString();
-    },
 
-    tableData(name, item) {
-      if (name == 'Education') {
-        return `
-          <td>${item.info.school}</td>
-          <td>${item.info.major}</td>
-          <td>${item.info.gpa}</td>
-          <td>${this.dataTimeString(item.info.to)}</td>
-          <td>${this.dataTimeString(item.info.from)}</td>
-        `;
-      }
-      else if (name == 'WorkExp') {
-        return `
-          <td>${item.info.company}</td>
-          <td>${this.dataTimeString(item.info.to)}</td>
-          <td>${this.dataTimeString(item.info.from)}</td>
-          <td>${item.info.jobTitle}</td>
-          <td>${item.info.jobDuty}</td>
-        `;
-      }
-      else if (name == 'VolunteerRecord') {
-        return ``;
-      }
-
-      return '';
-    },
 
     async getAllRegistryAsset() {
       try {
@@ -446,7 +278,7 @@ export default {
 
             //not display the reqeust asset, it display in notification page
             // record asset is for profile page
-            if (name != 'Request' && name != 'Record') {
+            if (name != 'Request') {
               integrated.push(name);
             }
           });

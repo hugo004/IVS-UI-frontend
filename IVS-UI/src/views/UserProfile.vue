@@ -14,10 +14,8 @@
 
         <ivs-authorized-table 
           :tableData="myProfile" 
-          hide-actions
           offset="offset"
           tabColor="dark-grey"
-          tableStyle="height:31vh"
         />
       </v-flex>
       <v-flex
@@ -56,6 +54,7 @@
         </material-card>
       </v-flex>
     </v-layout>
+
   </v-container>
 </template>
 
@@ -69,7 +68,10 @@ export default {
   name: 'Profile',
 
   data: () => ({
-    myProfile: new Map()
+    myProfile: new Map(),
+    dialog: false,
+    fileUrl: '',
+    fileName: ''
   }),
 
   async mounted() {

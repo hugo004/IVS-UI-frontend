@@ -213,6 +213,7 @@ import {
 } from '@/api/asset.js'
 
 import mixin from './js/mixins.js';
+import { mapState } from 'vuex';
 
 export default {
   name: 'ChannelManagement',
@@ -231,84 +232,6 @@ export default {
       'members': []
     },
 
-    //channel members asset
-    headersMap: new Map([
-      ['Education', [
-        {
-          text: 'School',
-          value: 'school',
-          sortable: false
-        },
-
-        {
-          text: 'Major',
-          value: 'major',
-          sortable: false
-        },
-
-        {
-          text: 'From',
-          value: 'from',
-          sortable: false
-        },
-
-        {
-          text: 'To',
-          value: 'to',
-          sortable: false
-        }
-      ]],
-      ['WorkExp', [
-        {
-          text: 'Company',
-          value: 'cname',
-          sortable: false
-        },
-
-        {
-          text: 'From',
-          value: 'workfrom',
-          sortable: false
-        },
-
-        {
-          text: 'To',
-          value: 'workto',
-          sortable: false
-        },
-
-        {
-          text: 'Job Title',
-          value: 'job',
-          sortable: false
-        },
-
-        {
-          text: 'Job Duty',
-          value: 'jobduty',
-          sortable: false
-        }
-      ]],
-      ['VolunteerRecord', [
-        {
-          text: 'Event Name',
-          value: 'evetn name',
-          sortable: false
-        },
-
-        {
-          text: 'Hold By',
-          value: 'holde by',
-          sortable: false
-        },
-
-        {
-          text: 'Description',
-          value: 'desc',
-          sortable: false
-        }
-      ]]
-    ]),
 
     showChannelInfo: false,
 
@@ -342,9 +265,15 @@ export default {
   },
 
   computed: {
+    ...mapState({
+      headersMap: state => state.assetHeadersMap
+    }),
+    
     myChannels() {
       return this.$store.state.myChannels;
     },
+
+
 
     authorizedData() {
       let memberInfo = this.channelAssets[this.selectedMemberId];
@@ -460,9 +389,9 @@ export default {
 
             //not display the reqeust asset, it display in notification page
             // record asset is for profile page
-            if (name != 'Request' && name != 'Record') {
+            // if (name != 'Request' || name != 'Record') {
               integrated.push(name);
-            }
+            // }
           });
 
           return integrated;

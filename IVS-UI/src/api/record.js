@@ -1,5 +1,5 @@
 import axios from "@/api/httpRequest.js";
-// import axios from "axios"
+import myAxios from "axios"
 
 export const GetRecords = () => {
     return axios.request({
@@ -71,4 +71,23 @@ export const DeleteRecord = (id) => {
         method: "delete",
         params
     });
+}
+
+
+export const UploadRecord = (files) => {
+
+    console.log(files);
+    let formData = new FormData();
+    for(let i = 0; i < files.length; i++) {
+        console.log(files[i])
+      formData.append('records', files[i]);
+    }
+    
+
+    return axios.uploadFile('UploadRecordFiles', formData,{
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+
 }
