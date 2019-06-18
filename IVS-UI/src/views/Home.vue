@@ -180,9 +180,7 @@ export default {
   methods: {
     async saveRecord(record){
       try {
-        console.log(record);
         // if (record) {
-          this.loading = true;
 
           // const {educations, workExps, volunteer} = record;
           // await UploadAsset({
@@ -190,13 +188,16 @@ export default {
           //   'workExps': workExps,
           //   'volunteerRecords':volunteer
           // });
-          let files = this.$refs.file.files();
-          await UploadRecord(files);
+          if (this.$refs.file.validate()) {
+            this.loading = true;
+            let files = this.$refs.file.files();
+            await UploadRecord(files);
 
-          this.loading = false;
-          this.upload = false;
+            this.loading = false;
+            this.upload = false;
 
-          this.$store.commit('showSuccess', 'Record Uploaded');
+            this.$store.commit('showSuccess', 'Record Uploaded');
+          }
         // }
       }
       catch (error) {
