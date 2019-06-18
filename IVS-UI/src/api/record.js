@@ -76,7 +76,6 @@ export const DeleteRecord = (id) => {
 
 export const UploadRecord = (files) => {
 
-    console.log(files);
     let formData = new FormData();
     for(let i = 0; i < files.length; i++) {
         console.log(files[i])

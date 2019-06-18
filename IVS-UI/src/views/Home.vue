@@ -80,12 +80,7 @@
             class="text-xs-left"
             :loading="loading"
           /> -->
-          <input
-            type="file" 
-            label="choose file" 
-            ref="file"
-            multiple
-            />
+          <ivs-file-upload-form ref="file"/>
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
@@ -183,23 +178,6 @@ export default {
   },
 
   methods: {
-    async selectFile(e) {
-      // console.log(e.target.files[0]);
-      // let file = e.target.files[0]
-      // let base64Str = await this.getBase64(file);
-      // console.log(base64Str);
-      await UploadRecord(e.target.files);
-    },
-
-    getBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-      });
-    },
-
     async saveRecord(record){
       try {
         console.log(record);
@@ -212,7 +190,7 @@ export default {
           //   'workExps': workExps,
           //   'volunteerRecords':volunteer
           // });
-          let files = this.$refs.file.files;
+          let files = this.$refs.file.files();
           await UploadRecord(files);
 
           this.loading = false;

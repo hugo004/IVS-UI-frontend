@@ -20,7 +20,7 @@
           <span class="heading px-2">Create Channel</span>
         </v-btn>
       </v-flex>
-      <v-flex xs12 class="pa-0">
+      <v-flex xs12>
         <v-layout row wrap>
           <v-flex 
             v-for="(channel,index) in myChannels"
@@ -45,8 +45,34 @@
           </v-flex>
         </v-layout>
       </v-flex>
+
+      <v-flex xs12>
+        <ivs-authorized-table
+          v-if="showChannelInfo"
+          :tableData="channelData"
+          :loading="channelTableLoading"
+        >
+          <template slot="header">
+            <v-layout align-center>
+              <v-flex>
+                <span class="title text-capitalize">{{ selectedChannel.name || ''}}'s record</span>
+              </v-flex>
+              <v-flex xs3 class="text-xs-right mx-2">
+                <v-btn
+                  round
+                  color="primary"
+                  class="elevation-1"
+                  @click="addChannelAssetDialog()"
+                >
+                  add channel record
+                </v-btn>
+              </v-flex>
+            </v-layout>
+          </template>
+        </ivs-authorized-table>
+      </v-flex>
       
-      <v-flex class="pa-0">
+      <v-flex>
         <ivs-authorized-table
           v-if="showChannelInfo"
           :tableData="authorizedData"
@@ -163,6 +189,32 @@
         </v-card>
       </template>
 
+      <template v-else-if="isChannelAsset">
+        <v-card>
+          <v-card-text>
+            <ivs-file-upload-form ref="file"/>
+          </v-card-text>
+          <v-divider></v-divider>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn 
+              outline 
+              @click="channelAssetDialogCancel()"
+            >
+              close
+            </v-btn>
+
+            <v-btn 
+              color="primary" 
+              @click="addChannelAsset()"
+              :loading="channelLoading"
+            >
+              upload
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </template>
+
       <template v-else>
         <ivs-channel-create-form 
           ref="form"
@@ -197,7 +249,9 @@
 
 import {
   GetUserChannel,
-  CreateChannel
+  CreateChannel,
+  UploadChannelAsset,
+  GetChannelAssets
 } from '@/api/channel.js';
 
 
@@ -214,6 +268,7 @@ import {
 
 import mixin from './js/mixins.js';
 import { mapState } from 'vuex';
+import { error } from 'util';
 
 export default {
   name: 'ChannelManagement',
@@ -251,7 +306,13 @@ export default {
     //user list
     userLoading: false,
     userList: [],
-    invitableList: []
+    invitableList: [],
+
+    //add channel asset
+    isChannelAsset: false,
+    channelLoading: false,
+    channelData: new Map(),
+    channelTableLoading: false
 
   }),
 
@@ -439,6 +500,8 @@ export default {
         //make the invitable channel list, which exclude the current channel members
         this.invitableList = this.userList.filter(e => !memberIds.includes(e.userId));
 
+        this.fetchChannelAsset();
+
       }
       catch (error) {
         this.$store.commit('showError', error);
@@ -524,6 +587,69 @@ export default {
       catch (error) {
         this.$store.commit('showError', error);
         this.userLoading = false;
+      }
+    },
+
+    async fetchChannelAsset() {
+      try {
+        if (this.selectedChannel) {
+          this.channelLoading = true;
+          
+          const {channelId} = this.selectedChannel;
+          this.channelData = await GetChannelAssets(channelId).then(result => {
+            let assetMap = new Map();
+
+            assetMap.set('Record', {
+              'headers': this.headersMap.get('Record'),
+              'items': result
+            });
+
+            return assetMap;
+          });
+
+          this.channelLoading = false;
+
+        }
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+        this.channelLoading = false;
+      }
+    },
+
+    addChannelAssetDialog() {
+      this.dialog = true;
+      this.isChannelAsset = true;
+    },
+
+    channelAssetDialogCancel() {
+      this.dialog = false;
+      this.isChannelAsset = false;
+    },
+
+    async addChannelAsset() {
+      try {
+      if (this.$refs.file.validate()) {
+        const files = this.$refs.file.files();
+        if (files) {
+          this.channelLoading = true;
+          const {channelId} = this.selectedChannel;
+
+          await UploadChannelAsset({
+            channelId: channelId,
+            files: files
+          });
+
+          this.channelAssetDialogCancel();
+          this.$store.commit('showSuccess', 'Channel record uploaded');
+          this.fetchChannelAsset();
+
+        }
+      }
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+        this.channelLoading = false;
       }
     }
   }
