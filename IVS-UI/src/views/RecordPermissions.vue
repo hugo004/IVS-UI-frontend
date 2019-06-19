@@ -6,25 +6,27 @@
   >
     <v-layout column>
       <v-flex>
-        <span class="heading">Authorize Resource</span>
-        <v-btn 
-          color="green"
-          dark
-          right
-          absolute
-          outline
-          @click="dialog=true"
-        >
-          <v-icon>fas fa-file-alt</v-icon>
-          <span class="heading px-2">Request Access Resource</span>
-        </v-btn>
-      </v-flex>
-      <v-flex>
         <ivs-authorized-table 
           :tableData="authorizedData"
         >
           <template slot="header">
-
+            <v-layout align-center>
+              <v-flex xs8>
+                <span class="text-capitalize">Authorize Resource</span>
+              </v-flex>
+              <v-flex class="text-xs-right">
+                <v-btn 
+                  color="primary"
+                  dark
+                  right
+                  round
+                  @click="dialog=true"
+                >
+                  <v-icon>fas fa-file-alt</v-icon>
+                  <span class="heading px-2">Request Access Resource</span>
+                </v-btn>
+              </v-flex>
+            </v-layout>
             <v-select 
               :items="authorizeItem"
               itemText="owner"
@@ -48,8 +50,20 @@
         >
           <template slot="header">
             <v-layout align-center>
-              <v-flex>
+              <v-flex xs8>
                 <span class="text-capitalize">Revoke my granted asset</span>
+              </v-flex>
+              <v-flex class="text-xs-right">
+                <v-btn 
+                  color="primary"
+                  dark
+                  right
+                  round
+                  @click="grantPermissionDialog()"
+                >
+                  <v-icon>fas fa-lock-open</v-icon>
+                  <span class="heading px-2">grant access permission</span>
+                </v-btn>
               </v-flex>
             </v-layout>
 
@@ -80,70 +94,138 @@
         v-model="isValid"
         lazy-validation
       >
-        <v-card>
-          <v-card-title class="title">Request Access Asset Form</v-card-title>
-          <v-card-text>
-            <v-text-field 
-              v-model="newRequest.eventName"
-              :rules="requiredRule"
-              label="*Event Name"
-            />
+        <template v-if="isGrantPermission">
+          <v-card>
+            <v-card-title class="title">Grant Record Access Permission</v-card-title>
+            <v-card-text>
+              <v-text-field 
+                v-model="newRequest.eventName"
+                :rules="requiredRule"
+                label="*Event Name"
+              />
 
-            <v-combobox 
-              v-model="selectedUser"
-              :rules="[v => !!v]"
-              :items="userList"
-              item-text="baseInfo.userName"
-              :loading="userLoading"
-              label="*Select the receiver"
-              return-object
-              @change="onUserSelect"
-            />
+              <v-combobox 
+                v-model="selectedUser"
+                :rules="[v => !!v]"
+                :items="userList"
+                item-text="baseInfo.userName"
+                :loading="userLoading"
+                label="*Select the receiver"
+                return-object
+                @change="onUserSelect"
+              />
 
-            <v-select 
-              v-model="newRequest.assetName"
-              :items="assetCategory"
-              :rules="requiredRule"
-              label="*Asset Name"
-              @change="fetchUserAsset"
-              :disabled="disableCateogry"
-            />
+              <v-select 
+                v-model="newRequest.assetName"
+                :items="assetCategory"
+                :rules="requiredRule"
+                label="*Asset Name"
+                @change="getUserAsset"
+                :disabled="disableCateogry"
+              />
 
-            <v-combobox 
-              v-model="selectedAssets"
-              :rules="requiredRule"
-              :items="assetList"
-              item-text="name"
-              :loading="assetLoading"
-              chips
-              label="Select asset"
-              multiple
-              @change="onAssetSelect"
-            />
+              <v-combobox 
+                v-model="selectedAssets"
+                :rules="requiredRule"
+                :items="assetList"
+                item-text="name"
+                :loading="assetLoading"
+                chips
+                label="Select asset"
+                multiple
+                @change="onAssetSelect"
+              />
 
-            <v-textarea 
-              v-model="newRequest.remarks"
-              label="Remarks"
-            />
-          </v-card-text>
-          <v-divider></v-divider>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn
-              outline
-              @click="dialog=false"
-            >
-              cancel
-            </v-btn>
-            <v-btn
-              color="primary"
-              :loading="createLoading"
-              @click="createNewRequest()"
-            >
-              reqeust
-            </v-btn>
-          </v-card-actions>
-        </v-card>
+              <v-textarea 
+                v-model="newRequest.remarks"
+                label="Remarks"
+              />
+            </v-card-text>
+            <v-divider></v-divider>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                outline
+                @click="dialog=false"
+              >
+                cancel
+              </v-btn>
+              <v-btn
+                color="primary"
+                :loading="createLoading"
+                @click="createNewRequest()"
+              >
+                grant
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </template>
+
+        <template v-else>
+          <v-card>
+            <v-card-title class="title">Request Access Asset Form</v-card-title>
+            <v-card-text>
+              <v-text-field 
+                v-model="newRequest.eventName"
+                :rules="requiredRule"
+                label="*Event Name"
+              />
+
+              <v-combobox 
+                v-model="selectedUser"
+                :rules="[v => !!v]"
+                :items="userList"
+                item-text="baseInfo.userName"
+                :loading="userLoading"
+                label="*Select the receiver"
+                return-object
+                @change="onUserSelect"
+              />
+
+              <v-select 
+                v-model="newRequest.assetName"
+                :items="assetCategory"
+                :rules="requiredRule"
+                label="*Asset Name"
+                :disabled="disableCateogry"
+              />
+
+              <v-combobox 
+                v-model="selectedAssets"
+                :rules="requiredRule"
+                :items="assetList"
+                item-text="name"
+                :loading="assetLoading"
+                chips
+                label="Select asset"
+                multiple
+                @change="onAssetSelect"
+              />
+
+              <v-textarea 
+                v-model="newRequest.remarks"
+                label="Remarks"
+              />
+            </v-card-text>
+            <v-divider></v-divider>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                outline
+                @click="dialog=false"
+              >
+                cancel
+              </v-btn>
+              <v-btn
+                color="primary"
+                :loading="createLoading"
+                @click="createNewRequest()"
+              >
+                reqeust
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </template>
       </v-form>
     </v-dialog>
   </v-container>
@@ -158,7 +240,8 @@ import {
   GetAccessRequestList,
   RevokeAccessAsset,
   GetUserList,
-  GetAssetList
+  GetAssetList,
+  GetMyProfile
 } from '@/api/asset.js'
 
 import mixin from './js/mixins.js';
@@ -206,7 +289,10 @@ export default {
     //asset list
     assetList: [],
     assetLoading: false,
-    selectedAssets: []
+    selectedAssets: [],
+
+    //grant permission
+    isGrantPermission: false
   }),
 
   async mounted() {
@@ -216,16 +302,17 @@ export default {
     //authorized people
     await this.fetchAuthorizeItem();
 
-    this.fetchMyAuthorizedItem();
+    await this.fetchMyAuthorizedItem();
 
-    this.getUserList();
+    await this.getUserList();
 
     
   },
 
   computed: {
     ...mapState({
-      headersMap: state => state.assetHeadersMap
+      headersMap: state => state.assetHeadersMap,
+      myProfile: state => state.myProfile
     }),
 
     myAuthorizedAsset() {
@@ -265,8 +352,6 @@ export default {
       return this.authorizedData.get(key).items || [];
     },
 
-
-
     async getAllRegistryAsset() {
       try {
         this.$store.commit('setLoading', true);
@@ -298,18 +383,16 @@ export default {
         this.loading = true;
   
         //fetech authorize item
-        let authoirzedList = await GetSentRequestList().then(result => {
+        let authoirzedList = await GetSentRequestList('ACCEPT').then(result => {
           let authorized = [];
           //get ACCEPT reqeust item, it the people authorize me, so put them on the list
           result.forEach(e => {
-            if (e.status == 'ACCEPT') {
-              if (!authorized.includes(e.senderName)) {
-                authorized.push({
-                  'owner': e.receiverName,
-                  'assetName': e.assetName,
-                  'assetIds': e.requested
-                });
-              }
+            if (!authorized.includes(e.senderName)) {
+              authorized.push({
+                'owner': e.receiverName,
+                'assetName': e.assetName,
+                'assetIds': e.requested
+              });
             }
           });
 
@@ -385,10 +468,19 @@ export default {
       try {
         if (this.isValid) {
           this.createLoading = true;
-          await RequestAccessAsset(this.newRequest);
+          
+          if (this.isGrantPermission) {
+              await RequestAccessAsset(this.newRequest, 'GRANT');
+              this.$store.commit('showSuccess', 'Access Permission Granted');
+          }
+          else {
+            await RequestAccessAsset(this.newRequest);
+            this.$store.commit('showSuccess', 'Request sent');
+          }
           this.createLoading = false;
-          this.$store.commit('showSuccess', 'Request sent');
+
           this.dialog = false;
+          this.isGrantPermission = false;
         }
       }
       catch (error) {
@@ -408,9 +500,14 @@ export default {
         _this.myAuthorizedAsset.clear();
         _this.myAuthenAssetLoading = true;
 
+        //get my granted record
+        let grantedList = await GetSentRequestList('GRANT');
+
         let authorizedData = await GetAccessRequestList('ACCEPT').then(result => {
 
           let requestList = result || [];
+          requestList.push(...grantedList);
+          
           let integratedMap = new Map();
 
           requestList.forEach(e => {
@@ -459,6 +556,7 @@ export default {
           return integratedMap;
 
         });
+;
 
         let authorizedMap = authorizedData;
         for (const [key, value] of authorizedMap.entries()) {
@@ -566,6 +664,43 @@ export default {
         this.assetLoading = false;
       }
 
+    },
+
+    async fetchMyProfile() {
+      try {
+        if (!this.myProfile) {
+          this.$store.commit('setLoading', true);
+
+          let _this = this;
+          await GetMyProfile().then(result => {
+            let map = new Map();
+            for (let field in result) {
+              map.set(field, {
+                headers: _this.headersMap.get(field),
+                items: result[field]
+              })
+            }
+            this.$store.commit('setProfile', map);
+            return map;
+          });
+          this.$store.commit('setLoading', false);
+        }
+
+        this.assetCategory = [...this.myProfile.keys()];
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+      }
+    },
+
+    async grantPermissionDialog() {
+      await this.fetchMyProfile();
+      this.dialog = true;
+      this.isGrantPermission = true;
+    },
+
+    getUserAsset(assetName) {
+      this.assetList = this.myProfile.get(assetName).items;
     }
 
   }

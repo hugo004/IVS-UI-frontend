@@ -4,6 +4,9 @@ export default {
   //user info
   userInfo: null,
   myChannels: [],
+  
+  //my profile
+  myProfile: null,
 
   //asset header map
   assetHeadersMap: new Map([

@@ -68,7 +68,6 @@ export default {
   name: 'Profile',
 
   data: () => ({
-    myProfile: new Map(),
     dialog: false,
     fileUrl: '',
     fileName: ''
@@ -76,21 +75,23 @@ export default {
 
   async mounted() {
     try {
-      this.$store.commit('setLoading', true);
+      if (!this.myProfile) {
+        this.$store.commit('setLoading', true);
 
-      let _this = this;
-      this.myProfile = await GetMyProfile().then(result => {
-        let map = new Map();
-        for (let field in result) {
-          map.set(field, {
-            headers: _this.headersMap.get(field),
-            items: result[field]
-          })
-        }
-
-        return map;
-      });
-      this.$store.commit('setLoading', false);
+        let _this = this;
+        await GetMyProfile().then(result => {
+          let map = new Map();
+          for (let field in result) {
+            map.set(field, {
+              headers: _this.headersMap.get(field),
+              items: result[field]
+            })
+          }
+          this.$store.commit('setProfile', map);
+          return map;
+        });
+        this.$store.commit('setLoading', false);
+      }
     }
     catch (error) {
       this.$store.commit('showError', error);
@@ -99,7 +100,8 @@ export default {
 
   computed: {
     ...mapState({
-      headersMap: state => state.assetHeadersMap
+      headersMap: state => state.assetHeadersMap,
+      myProfile: state => state.myProfile
     }),
 
     userInfo() {

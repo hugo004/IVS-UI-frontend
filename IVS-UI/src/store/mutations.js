@@ -5,6 +5,11 @@ export default {
     state.myChannels = myChannel;
   },
 
+  //profile
+  setProfile(state, myProfile) {
+    state.myProfile = myProfile;
+  },
+
   //notification control
   showNotification(state, args=['top', 'right']) {
     state.top = false

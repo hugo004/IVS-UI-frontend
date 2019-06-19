@@ -2,9 +2,18 @@ import axios from "@/api/httpRequest.js";
 import qs from "qs";
 
 export const GetAccessRequestList = (status='ALL') => {
-  const param = {
-    status: status
-  };
+
+  const filter = new URLSearchParams();
+
+  if (typeof status != 'string') {
+    status.forEach(e => {
+      filter.append('status', e);
+    });
+  }
+  else {
+    filter.append('status', status);
+  }
+  const param = filter;
 
   return axios.request({
     url: '/GetAccessRequestList',
@@ -13,10 +22,23 @@ export const GetAccessRequestList = (status='ALL') => {
   });
 }
 
-export const GetSentRequestList = () => {
+export const GetSentRequestList = (status='ALL') => {
+  const filter = new URLSearchParams();
+
+  if (typeof status != 'string') {
+    status.forEach(e => {
+      filter.append('status', e);
+    });
+  }
+  else {
+    filter.append('status', status);
+  }
+  const param = filter
+
   return axios.request({
     url: '/GetSentRequestList',
-    method: 'get'
+    method: 'get',
+    params: param
   });
 }
 
@@ -75,14 +97,15 @@ export const RequestAccessAsset = ({
   remarks,
   assetId,
   assetName
-}) => {
+}, status) => {
   const data = {
     receiverId: receiverId,
     receiverName: receiverName,
     eventName: eventName,
     remarks: remarks,
     assetId: assetId,
-    assetName: assetName
+    assetName: assetName,
+    status: status
   };
 
   return axios.request({
