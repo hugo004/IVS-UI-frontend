@@ -50,7 +50,6 @@
         <ivs-authorized-table
           v-if="showChannelInfo"
           :tableData="channelData"
-          :loading="channelTableLoading"
         >
           <template slot="header">
             <v-layout align-center>
@@ -68,6 +67,7 @@
                 </v-btn>
               </v-flex>
             </v-layout>
+          <v-progress-linear :indeterminate="true" v-if="channelTableLoading" color="white" />
           </template>
         </ivs-authorized-table>
       </v-flex>
@@ -290,7 +290,7 @@ export default {
 
     showChannelInfo: false,
 
-    channelAssets: [],
+    channelAssets: {},
     selectedChannel: null,
     selectedMemberId: '',
     selectedMemberInfo: {},
@@ -494,7 +494,7 @@ export default {
         }
 
         //get channel members assets
-        this.channelAssets = await GetChannelMemberAssets(memberIds);
+        // this.channelAssets = await GetChannelMemberAssets(memberIds);
         this.$store.commit('setLoading', false);
 
         //make the invitable channel list, which exclude the current channel members
@@ -508,8 +508,29 @@ export default {
       }
     },
 
-    viewMember(member) {
-      this.selectedMemberId = member.userId;
+    async viewMember(member) {
+      let memberIds = member.userId;
+
+      //get member data, if empty
+      let data = this.channelAssets[memberIds];
+      if (data) {
+        this.selectedMemberId = memberIds;
+        return;
+      }
+
+      try {
+        this.$store.commit('setLoading', true);
+
+        let memberAsset = await GetChannelMemberAssets([memberIds]);
+        Object.assign(this.channelAssets, memberAsset);
+        this.selectedMemberId = memberIds;
+
+        this.$store.commit('setLoading', false);
+
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+      }
     },
 
     memberInviteForm() {
@@ -593,7 +614,7 @@ export default {
     async fetchChannelAsset() {
       try {
         if (this.selectedChannel) {
-          this.channelLoading = true;
+          this.channelTableLoading = true;
           
           const {channelId} = this.selectedChannel;
           this.channelData = await GetChannelAssets(channelId).then(result => {
@@ -607,13 +628,13 @@ export default {
             return assetMap;
           });
 
-          this.channelLoading = false;
+          this.channelTableLoading = false;
 
         }
       }
       catch (error) {
         this.$store.commit('showError', error);
-        this.channelLoading = false;
+        this.channelTableLoading = false;
       }
     },
 
