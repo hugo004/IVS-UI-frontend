@@ -53,7 +53,8 @@
                           color="primary"
                           @click.stop="$emit('click', props.item)"
                         >
-                          revoke
+                          <v-icon small>fas fa-lock</v-icon>
+                          <span class="heading px-2">revoke</span>
                         </v-btn>
                       </td>
                   </tr>

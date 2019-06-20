@@ -14,7 +14,7 @@
               <v-flex xs8>
                 <span class="text-capitalize">Authorize Resource</span>
               </v-flex>
-              <v-flex class="text-xs-right">
+              <v-flex class="text-xs-right px-0">
                 <v-btn 
                   color="primary"
                   dark
@@ -31,13 +31,26 @@
               :items="authorizeItem"
               itemText="owner"
               label="Authorize people"
-              color="black"
+              color="black--text white"
               :loading="loading"
               solo
               dark
               return-object
               @change="selectAuthorizeData"
-            />
+            >
+              <template slot="append-outer">
+                <v-btn
+                  class="pa-0 ma-0"
+                  dark
+                  flat
+                  icon
+                  small
+                  @click="fetchAuthorizeItem()"
+                >
+                  <v-icon>refresh</v-icon>
+                </v-btn>
+              </template>
+            </v-select>
           </template>
         </ivs-authorized-table>
       </v-flex>
@@ -53,7 +66,7 @@
               <v-flex xs8>
                 <span class="text-capitalize">Revoke my granted asset</span>
               </v-flex>
-              <v-flex class="text-xs-right">
+              <v-flex class="text-xs-right px-0">
                 <v-btn 
                   color="primary"
                   dark
@@ -72,13 +85,26 @@
               :items="myAuthenUserList"
               item-text="name"
               label="Granted to"
-              color="white"
+              color="black--text white"
               solo
               dark
               return-object
               @change="viewMyAuthenInfo"
               :loading="myAuthenAssetLoading"
-            />
+            >
+              <template slot="append-outer">
+                <v-btn
+                  class="pa-0 ma-0"
+                  dark
+                  flat
+                  icon
+                  small
+                  @click="fetchMyAuthorizedItem()"
+                >
+                  <v-icon>refresh</v-icon>
+                </v-btn>
+              </template>
+            </v-select>
           </template>
         </ivs-authorized-table>
       </v-flex>
@@ -98,22 +124,7 @@
           <v-card>
             <v-card-title class="title">Grant Record Access Permission</v-card-title>
             <v-card-text>
-              <v-text-field 
-                v-model="newRequest.eventName"
-                :rules="requiredRule"
-                label="*Event Name"
-              />
 
-              <v-combobox 
-                v-model="selectedUser"
-                :rules="[v => !!v]"
-                :items="userList"
-                item-text="baseInfo.userName"
-                :loading="userLoading"
-                label="*Select the receiver"
-                return-object
-                @change="onUserSelect"
-              />
 
               <v-select 
                 v-model="newRequest.assetName"
@@ -121,10 +132,11 @@
                 :rules="requiredRule"
                 label="*Asset Name"
                 @change="getUserAsset"
-                :disabled="disableCateogry"
               />
 
               <v-combobox 
+                ref="assetList"
+                key="assetList"
                 v-model="selectedAssets"
                 :rules="requiredRule"
                 :items="assetList"
@@ -136,6 +148,17 @@
                 @change="onAssetSelect"
               />
 
+              <v-combobox 
+                key="userList"
+                v-model="selectedUser"
+                :rules="[v => !!v]"
+                :items="userList"
+                item-text="baseInfo.userName"
+                :loading="userLoading"
+                label="*Select the receiver"
+                return-object
+                @change="onUserSelect"
+              />
               <v-textarea 
                 v-model="newRequest.remarks"
                 label="Remarks"
@@ -146,7 +169,7 @@
               <v-spacer></v-spacer>
               <v-btn
                 outline
-                @click="dialog=false"
+                @click="dialog=false, isGrantPermission=false"
               >
                 cancel
               </v-btn>
@@ -188,9 +211,11 @@
                 :rules="requiredRule"
                 label="*Asset Name"
                 :disabled="disableCateogry"
+                @change="fetchUserAsset"
               />
 
               <v-combobox 
+                ref="assetList"
                 v-model="selectedAssets"
                 :rules="requiredRule"
                 :items="assetList"
@@ -343,7 +368,31 @@ export default {
     }
   },
 
+  watch: {
+    dialog(val) {
+      if (val) {
+        this.resetData();
+      }
+    }
+  },
+
   methods: {
+    resetData() {
+      this.selectedAssets = [];
+      this.seletedUserInfo = {};
+      this.selectedUserId = '';
+      this.selectedUser = [];
+      
+      this.newRequest = {
+        'receiverId': '',
+        'receiverName': '',
+        'eventName': '',
+        'remarks': '',
+        'assetId': [],
+        'assetName': ''
+      }
+    },
+
     tableHeader(key) {
       return this.authorizedData.get(key).headers || [];
     },
@@ -380,13 +429,30 @@ export default {
 
     async fetchAuthorizeItem() {
       try {
+        this.authorizedData = new Map();
         this.loading = true;
   
         //fetech authorize item
+        let grantedList = await GetAccessRequestList('GRANT').then(result => {
+          //exchange the sender and receiver filed value
+          result.forEach(e => {
+            const {receiverId, receiverName, senderId, senderName} = e;
+            e['receiverId'] = senderId;
+            e['receiverName'] = senderName;
+            e['senderId'] = receiverId;
+            e['senderName'] = receiverName;
+          });
+          
+          return result;
+        });
+
         let authoirzedList = await GetSentRequestList('ACCEPT').then(result => {
           let authorized = [];
           //get ACCEPT reqeust item, it the people authorize me, so put them on the list
-          result.forEach(e => {
+          let list = result || [];
+          list.push(...grantedList);
+
+          list.forEach(e => {
             if (!authorized.includes(e.senderName)) {
               authorized.push({
                 'owner': e.receiverName,
@@ -410,25 +476,11 @@ export default {
               'assetIds': assetIds
             });
 
-            //decreapted
-            // item.items = itemList;
-
-            //add the talbe header for display
-            let headers = [];
-            if (assetName == 'Education') {
-              headers = this.educationHeaders;
-            }
-            else if (assetName == 'WorkExp') {
-              headers = this.workExpHeaders;
-            }
-            else if (assetName == 'VolunteerRecord') {
-              headers = this.volunteerHeaders;
-            }
 
             let ownerData = new Map();
             ownerData.set(assetName, {
               'category': assetName,
-              'headers': headers,
+              'headers': this.headersMap.get(assetName),
               'items': itemList
             });
 
@@ -441,11 +493,13 @@ export default {
                 index = i;
               }
             }
+
             
             if (index > -1) {
               let item = authorizedItems[index];
-              //if same, merge the map
-              item.data = new Map([...item.data, ...ownerData]);
+              //if same owner, merge the items
+              let mergeItems = [...item.data.get(assetName).items, ...ownerData.get(assetName).items];
+              item.data.get(assetName).items = mergeItems;
             }
             else {
               authorizedItems.push({
@@ -453,6 +507,7 @@ export default {
                 data: ownerData
               });
             }
+
         }
 
         this.authorizeItem = authorizedItems;
@@ -470,8 +525,10 @@ export default {
           this.createLoading = true;
           
           if (this.isGrantPermission) {
-              await RequestAccessAsset(this.newRequest, 'GRANT');
-              this.$store.commit('showSuccess', 'Access Permission Granted');
+            //default name when grant action
+            this.newRequest.eventName = 'Grant Record Permission';
+            await RequestAccessAsset(this.newRequest, 'GRANT');
+            this.$store.commit('showSuccess', 'Access Permission Granted');
           }
           else {
             await RequestAccessAsset(this.newRequest);
@@ -499,9 +556,21 @@ export default {
         let _this = this;
         _this.myAuthorizedAsset.clear();
         _this.myAuthenAssetLoading = true;
+        _this.myAuthenUserList = [];
 
         //get my granted record
-        let grantedList = await GetSentRequestList('GRANT');
+        let grantedList = await GetSentRequestList('GRANT').then(result => {
+          //exchange the sender and receiver filed value
+          result.forEach(e => {
+            const {receiverId, receiverName, senderId, senderName} = e;
+            e['receiverId'] = senderId;
+            e['receiverName'] = senderName;
+            e['senderId'] = receiverId;
+            e['senderName'] = receiverName;
+          });
+
+          return result;
+        });
 
         let authorizedData = await GetAccessRequestList('ACCEPT').then(result => {
 
@@ -556,7 +625,6 @@ export default {
           return integratedMap;
 
         });
-;
 
         let authorizedMap = authorizedData;
         for (const [key, value] of authorizedMap.entries()) {
@@ -608,7 +676,6 @@ export default {
         assetName = assetName[assetName.length - 1];
 
         const {id} = this.seletedUserInfo;
-
         await RevokeAccessAsset({
           'assetName': assetName,
           'assetIds': [assetId],
@@ -643,6 +710,12 @@ export default {
         this.selectedUserId = val.userId;
 
         this.selectedUser = val.baseInfo.userName;
+
+        //reset asset name when re-select user
+        if (!this.isGrantPermission) {
+          this.newRequest.assetName = '';
+          this.selectedAssets = [];
+        }
       }
     },
 
@@ -653,6 +726,8 @@ export default {
     },
 
     async fetchUserAsset(assetName) {
+      this.selectedAssets = [];
+
       if (this.selectedUserId) {
         this.assetLoading = true;
 
@@ -662,6 +737,8 @@ export default {
         });
 
         this.assetLoading = false;
+
+        this.openAssetListMenu();
       }
 
     },
@@ -700,7 +777,16 @@ export default {
     },
 
     getUserAsset(assetName) {
+      this.selectedAssets = [];
       this.assetList = this.myProfile.get(assetName).items;
+      this.openAssetListMenu();
+    },
+
+    openAssetListMenu() {
+      this.$nextTick(() => {
+        this.$refs.assetList.focus();
+        this.$refs.assetList.activateMenu();
+      });
     }
 
   }

@@ -162,9 +162,9 @@ export default {
   
   async mounted()
   {
-    this.fetchHistoryTransaction();
+    await this.fetchChannel();
 
-    this.fetchChannel();
+    await this.fetchHistoryTransaction();
 
   },
 
