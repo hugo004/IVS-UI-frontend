@@ -382,6 +382,7 @@ export default {
       this.seletedUserInfo = {};
       this.selectedUserId = '';
       this.selectedUser = [];
+      this.assetList = [];
       
       this.newRequest = {
         'receiverId': '',

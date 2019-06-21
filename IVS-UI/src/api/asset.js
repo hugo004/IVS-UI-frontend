@@ -230,7 +230,7 @@ export const GetHistoryData = () => {
 
 export const GetUserList = () => {
   return axios.request({
-    url: '/admin/getUsers',
+    url: '/getUsers',
     method: 'get'
   });
 };

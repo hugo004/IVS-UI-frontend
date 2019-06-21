@@ -172,9 +172,8 @@ export default {
   },
 
   methods: {
-    async saveRecord(record){
+    async saveRecord(){
       try {
-        // if (record) {
 
           if (this.$refs.file.validate()) {
             this.loading = true;
