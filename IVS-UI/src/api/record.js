@@ -3,7 +3,7 @@ import myAxios from "axios"
 
 export const GetRecords = () => {
     return axios.request({
-        url: "/Record",
+        url: "/getVerifyRecord",
         method: "get"
     });
 };
@@ -89,4 +89,26 @@ export const UploadRecord = (files) => {
         }
     });
 
+}
+
+export const VerifyRecord = ({
+    isVerify,
+    recordId,
+    recordName,
+    ownerId,
+    ownerName
+}) => {
+    const data = {
+        isVerify: isVerify,
+        recordId: recordId,
+        recordName: recordName,
+        ownerId: ownerId,
+        ownerName: ownerName
+    };
+
+    return axios.request({
+        url: '/verifyRecord',
+        method: 'put',
+        data: data
+    });
 }

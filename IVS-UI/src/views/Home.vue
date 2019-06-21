@@ -106,8 +106,6 @@
 
 <script>
 import { 
-  CreateRecord,
-  GetRecords,
   UploadRecord
 } from "@/api/record.js";
 

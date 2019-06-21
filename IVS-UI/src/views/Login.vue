@@ -39,6 +39,11 @@
                     label="Password"
                     type="password"
                   ></v-text-field>
+
+                  <v-radio-group v-model="isVerifier" row>
+                    <v-radio color="primary" label="Normal User" :value="false"></v-radio>
+                    <v-radio color="primary" label="Verifier" :value="true"></v-radio>
+                  </v-radio-group>
                 </v-form>
               </v-card-text>
               <v-card-actions>
@@ -92,6 +97,7 @@
 <script>
 import { 
   LoginIVS,
+  VerifierLoginIVS,
   Registration
 } from "@/api/auth.js";
 
@@ -117,21 +123,34 @@ export default {
       'lastName': '',
       'email': '',
       'phone': ''
-    }
+    },
+
+    isVerifier: false
   }),
 
   methods: {
     async login() {
+
       try {
         if (this.$refs.form.validate()) {
           this.loading = true;
-          let resposne = await LoginIVS({
-            userName: this.userName,
-            password: this.password
-          });
+          let response;
+          
+          if (this.isVerifier) {
+            response = await VerifierLoginIVS({
+              userName: this.userName,
+              password: this.password
+            });
+          }
+          else {
+            response = await LoginIVS({
+              userName: this.userName,
+              password: this.password
+            });
+          }
           this.loading = false;
-          localStorage.setItem('token', resposne.accessToken);
-          localStorage.setItem('userInfo', resposne.userInfo);
+          localStorage.setItem('token', response.accessToken);
+          localStorage.setItem('userInfo', response.userInfo);
           location.href = '/';
         }
       }

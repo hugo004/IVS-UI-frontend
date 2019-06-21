@@ -15,6 +15,21 @@ export const LoginIVS = ({
     });
 };
 
+export const VerifierLoginIVS = ({
+  userName,
+  password
+}) => {
+  const data =  {
+    "userName": userName,
+    "password": password
+  }
+    return axios.request({
+        url: "/verifierLogin",
+        method: "post",
+        data: data
+    });
+};
+
 
 export const LogoutIVS = () => {
   return axios.request({
@@ -22,6 +37,7 @@ export const LogoutIVS = () => {
     method: 'post'
   });
 };
+
 
 
 export const Registration = ({

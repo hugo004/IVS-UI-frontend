@@ -73,7 +73,7 @@ export default {
     fileName: ''
   }),
 
-  async mounted() {
+  async created() {
     try {
       if (!this.myProfile) {
         this.$store.commit('setLoading', true);

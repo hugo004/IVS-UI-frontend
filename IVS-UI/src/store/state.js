@@ -1,8 +1,9 @@
 // https://vuex.vuejs.org/en/state.html
 
 export default {
+  //verifier
+  isVerifier: false,
   //user info
-  userInfo: null,
   myChannels: [],
   
   //my profile

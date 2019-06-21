@@ -39,7 +39,7 @@
                 :style="tableStyle"
               >
                 <template v-slot:items="props">
-                  <tr @click="onItemClick(props.item)">
+                  <tr @click="onItemClick(props.item)" class="record-detail">
                     <td 
                       v-for="(data,index) in content(key, props.item)"
                       :key="index"

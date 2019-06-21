@@ -9,6 +9,11 @@ export default [
     view: 'Login'
   },
   {
+    path: '/verify',
+    view: 'Verify',
+    name: 'Record Verification'
+  },
+  {
     path: '/dashboard',
     view: 'Home'
   },
