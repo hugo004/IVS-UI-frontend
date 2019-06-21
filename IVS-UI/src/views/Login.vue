@@ -6,7 +6,7 @@
           <v-flex xs12 sm8 md4 class="text-xs-left">
             <v-card class="elevation-12">
               <v-card-title class="primary white--text title">
-                Login Form
+                Login Form {{ isVerifier ? '(Verifier)' : ''}}
                 <v-spacer></v-spacer>
                 <v-btn
                   icon
@@ -38,12 +38,8 @@
                     prepend-icon="lock"
                     label="Password"
                     type="password"
+                    @keydown.enter="login()"
                   ></v-text-field>
-
-                  <v-radio-group v-model="isVerifier" row>
-                    <v-radio color="primary" label="Normal User" :value="false"></v-radio>
-                    <v-radio color="primary" label="Verifier" :value="true"></v-radio>
-                  </v-radio-group>
                 </v-form>
               </v-card-text>
               <v-card-actions>
@@ -127,6 +123,18 @@ export default {
 
     isVerifier: false
   }),
+
+  created() {
+    const {verifier} = this.$route.query;
+    console.log(verifier)
+    if (verifier) {
+      this.isVerifier = true;
+    }
+    else {
+      this.isVerifier = false;
+    }
+
+  },
 
   methods: {
     async login() {
