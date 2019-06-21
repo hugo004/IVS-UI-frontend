@@ -74,9 +74,10 @@ export const DeleteRecord = (id) => {
 }
 
 
-export const UploadRecord = (files) => {
+export const UploadRecord = (files, recordType) => {
 
     let formData = new FormData();
+    formData.append('recordType', recordType);
     for(let i = 0; i < files.length; i++) {
         console.log(files[i])
       formData.append('records', files[i]);

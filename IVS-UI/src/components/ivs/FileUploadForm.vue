@@ -23,10 +23,18 @@
       label="Choose file"
       @click='pickFile' 
       v-model='fileName' 
-      prepend-icon='attach_file'
+      append-icon='attach_file'
       :rules="fileUploadRule(fileSize)"
       :hint="`File Size: ${formatFileSize(fileSize)} (< 1MB)`"
     ></v-text-field>
+
+    <v-select 
+      v-model="localRecordType"
+      :items="recordTypeList"
+      :rules="requiredRule"
+      label="*Record Type"
+      class="mt-4"
+    />
   </v-form>
 </template>
 
@@ -37,14 +45,37 @@ import mixin from '../mixin.js';
 export default {
   name: 'FileUploadForm',
   mixins: [mixin],
+
+  props: {
+    recordType: {
+      type: String,
+      default: 'Other'
+    }
+  },
   
   data: () => ({
     fileName: '',
     fileUrl: '',
     fileSize: 0,
     preview: false,
-    isValid: true
+    isValid: true,
+    localRecordType: 'Other',
+
+    recordTypeList: [
+      'Education',
+      'WorkExp',
+      'Volunteer',
+      'Other'
+    ]
   }),
+
+  watch: {
+    localRecordType(val, old) {
+      if (val == old) return;
+      
+      this.$emit('update:recordType', val);
+    }
+  },
 
   methods: {
     formatFileSize(bytes,decimalPoint) {

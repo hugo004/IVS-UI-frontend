@@ -75,12 +75,10 @@
     >
       <v-card>
         <v-card-text>
-          <!-- <ivs-upload-record 
-            :myRecord.sync="record" 
-            class="text-xs-left"
-            :loading="loading"
-          /> -->
-          <ivs-file-upload-form ref="file"/>
+          <ivs-file-upload-form 
+            ref="file"
+            :recordType.sync="recordType"
+          />
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
@@ -93,7 +91,7 @@
           </v-btn>
 
           <v-btn color="primary" 
-          @click="saveRecord(record)" 
+          @click="saveRecord()" 
           :loading="loading"
           >
             Create
@@ -149,10 +147,8 @@ export default {
         }
       ],
       items: [],
-
       channels: [],
-
-      record: null,
+      recordType: 'Other'
 
 
     }
@@ -180,23 +176,16 @@ export default {
       try {
         // if (record) {
 
-          // const {educations, workExps, volunteer} = record;
-          // await UploadAsset({
-          //   'educations': educations,
-          //   'workExps': workExps,
-          //   'volunteerRecords':volunteer
-          // });
           if (this.$refs.file.validate()) {
             this.loading = true;
             let files = this.$refs.file.files();
-            await UploadRecord(files);
+            await UploadRecord(files, this.recordType);
 
             this.loading = false;
             this.upload = false;
 
             this.$store.commit('showSuccess', 'Record Uploaded');
           }
-        // }
       }
       catch (error) {
         this.$store.commit('showError', error);
