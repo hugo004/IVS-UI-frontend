@@ -167,7 +167,7 @@ export default {
   computed: {
     latestTranstionTime() {
       if (this.items.length > 0) {
-        let last = this.items[this.items.length - 1];
+        let last = this.items[0];
         return this.transationDate(last.transactionTimestamp);
       }
     }
