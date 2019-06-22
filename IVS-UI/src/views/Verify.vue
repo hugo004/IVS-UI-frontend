@@ -37,7 +37,7 @@
           </template>
           <template v-slot:items="props">
             <tr @click="viewRecord(props.item)" class="record-detail">
-              <td class="text-xs-left">{{ dataTimeString(props.item.createTime) }}</td>
+              <td class="text-xs-left">{{ dataTimeString(props.item.creatTime) }}</td>
               <td class="text-xs-left">{{ props.item.name }}</td>
               <td class="text-xs-left">{{ props.item.owner.baseInfo.userName }}</td>
               <td class="text-xs-left">{{ props.item.isVerify ? 'Verified' : 'Not Verify' }}</td>
@@ -160,7 +160,7 @@ export default {
     lastUpdated() {
       if (this.tableItems.length > 0) {
         let last = this.tableItems[this.tableItems.length - 1];
-        return this.transationDate(last.createTime);
+        return this.transationDate(last.creatTime);
       }
     }
   },

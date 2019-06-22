@@ -17,7 +17,7 @@ export const CreateChannel = ({
   };
 
   return axios.request({
-    url: '/admin/createChannel',
+    url: '/createChannel',
     method: 'post',
     data: data
   });

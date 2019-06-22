@@ -13,6 +13,7 @@
                   dark
                   small
                   @click="showRegistrationForm()"
+                  v-if="!isVerifier"
                 >
                   <v-icon>fas fa-user-plus</v-icon>
                 </v-btn>

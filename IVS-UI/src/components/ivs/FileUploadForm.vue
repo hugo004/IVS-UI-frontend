@@ -34,13 +34,35 @@
       :rules="requiredRule"
       label="*Record Type"
       class="mt-4"
+      @change="onRecordTypeChange"
     />
+
+    <v-combobox 
+      v-if="showVerifier"
+      ref="verifierList"
+      v-model="selectedVerifier"
+      :rules="requiredRule"
+      :items="verifierList"
+      item-text="name"
+      item-value="vid"
+      :loading="verifierLoading"
+      chips
+      label="Select organization"
+      @change="onVerifierChange"
+    >
+      <span slot="no-data" class="ma-3">
+        no available verifier
+      </span>
+    </v-combobox>
+
   </v-form>
 </template>
 
 <script>
 import mixin from '../mixin.js';
-
+import {
+  GetVerifierList
+} from '@/api/record.js'
 
 export default {
   name: 'FileUploadForm',
@@ -50,6 +72,12 @@ export default {
     recordType: {
       type: String,
       default: 'Other'
+    },
+    
+    verifier: String,
+    showVerifier: {
+      type: Boolean,
+      default: true
     }
   },
   
@@ -61,12 +89,16 @@ export default {
     isValid: true,
     localRecordType: 'Other',
 
+    //verifier
     recordTypeList: [
       'Education',
       'WorkExp',
       'Volunteer',
       'Other'
-    ]
+    ],
+    selectedVerifier: '',
+    verifierList: [],
+    verifierLoading: false
   }),
 
   watch: {
@@ -78,6 +110,11 @@ export default {
   },
 
   methods: {
+    onVerifierChange(val) {
+      this.selectedVerifier = val.name;
+      this.$emit('update:verifier', val.vid);
+    },
+
     formatFileSize(bytes,decimalPoint) {
       if(bytes == 0) return '0 Bytes';
       let k = 1000,
@@ -109,6 +146,25 @@ export default {
 
     validate() {
       return this.$refs.form.validate();
+    },
+
+    async onRecordTypeChange(type) {
+      if (!this.showVerifier) return;
+      
+      try {
+        console.log('GetVerifierList');
+        this.selectedVerifier = '';
+        this.verifierLoading = true;
+        this.verifierList = await GetVerifierList(type);
+        this.verifierLoading = false;
+
+        this.$refs.verifierList.focus();
+        this.$refs.verifierList.activateMenu();
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+        this.verifierLoading = false;
+      }
     }
   },
 

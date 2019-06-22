@@ -74,10 +74,11 @@ export const DeleteRecord = (id) => {
 }
 
 
-export const UploadRecord = (files, recordType) => {
+export const UploadRecord = (files, recordType, verifier) => {
 
     let formData = new FormData();
     formData.append('recordType', recordType);
+    formData.append('relateVerifier', verifier);
     for(let i = 0; i < files.length; i++) {
         console.log(files[i])
       formData.append('records', files[i]);
@@ -111,5 +112,17 @@ export const VerifyRecord = ({
         url: '/verifyRecord',
         method: 'put',
         data: data
+    });
+}
+
+export const GetVerifierList = (verifierType) => {
+    const params = {
+        verifierType: verifierType
+    };
+
+    return axios.request({
+        url: '/getVerifierList',
+        method: 'get',
+        params: params
     });
 }

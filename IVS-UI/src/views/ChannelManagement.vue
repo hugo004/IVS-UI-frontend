@@ -114,7 +114,7 @@
     <v-dialog 
       v-model="dialog"
       persistent
-      max-width="500"
+      max-width="800"
     >
       <template v-if="inviteNewMember">
         <v-form
@@ -192,7 +192,10 @@
       <template v-else-if="isChannelAsset">
         <v-card>
           <v-card-text>
-            <ivs-file-upload-form ref="file"/>
+            <ivs-file-upload-form 
+              ref="file"
+              :show-verifier="false"  
+            />
           </v-card-text>
           <v-divider></v-divider>
           <v-card-actions>

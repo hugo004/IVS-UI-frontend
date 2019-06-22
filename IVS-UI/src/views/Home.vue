@@ -78,6 +78,7 @@
           <ivs-file-upload-form 
             ref="file"
             :recordType.sync="recordType"
+            :verifier.sync="verifier"
           />
         </v-card-text>
         <v-divider></v-divider>
@@ -148,7 +149,8 @@ export default {
       ],
       items: [],
       channels: [],
-      recordType: 'Other'
+      recordType: 'Other',
+      verifier: ''
 
 
     }
@@ -178,7 +180,7 @@ export default {
           if (this.$refs.file.validate()) {
             this.loading = true;
             let files = this.$refs.file.files();
-            await UploadRecord(files, this.recordType);
+            await UploadRecord(files, this.recordType, this.verifier);
 
             this.loading = false;
             this.upload = false;
