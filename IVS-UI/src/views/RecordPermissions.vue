@@ -141,6 +141,7 @@
                 :rules="requiredRule"
                 :items="assetList"
                 item-text="name"
+                item-value="assetId"
                 :loading="assetLoading"
                 chips
                 label="Select asset"
@@ -188,12 +189,6 @@
           <v-card>
             <v-card-title class="title">Request Access Asset Form</v-card-title>
             <v-card-text>
-              <v-text-field 
-                v-model="newRequest.eventName"
-                :rules="requiredRule"
-                label="*Event Name"
-              />
-
               <v-combobox 
                 v-model="selectedUser"
                 :rules="[v => !!v]"
@@ -211,7 +206,8 @@
                 :rules="requiredRule"
                 label="*Asset Name"
                 :disabled="disableCateogry"
-                @change="fetchUserAsset"
+                @change="onCategoryChange"
+                :loading="assetLoading"
               />
 
               <v-combobox 
@@ -220,7 +216,7 @@
                 :rules="requiredRule"
                 :items="assetList"
                 item-text="name"
-                :loading="assetLoading"
+                item-value="assetId"
                 chips
                 label="Select asset"
                 multiple
@@ -310,6 +306,7 @@ export default {
     userList: [],
     selectedUserId: '',
     selectedUser: [],
+    receiverAssets: {},
 
     //asset list
     assetList: [],
@@ -366,6 +363,7 @@ export default {
 
       return true;
     }
+    
   },
 
   watch: {
@@ -532,6 +530,7 @@ export default {
             this.$store.commit('showSuccess', 'Access Permission Granted');
           }
           else {
+            this.newRequest.eventName = 'Request Record Access Permission'
             await RequestAccessAsset(this.newRequest);
             this.$store.commit('showSuccess', 'Request sent');
           }
@@ -716,6 +715,7 @@ export default {
         if (!this.isGrantPermission) {
           this.newRequest.assetName = '';
           this.selectedAssets = [];
+          this.fetchUserAsset();
         }
       }
     },
@@ -726,23 +726,51 @@ export default {
       }
     },
 
-    async fetchUserAsset(assetName) {
+    async fetchUserAsset() {
       this.selectedAssets = [];
 
       if (this.selectedUserId) {
-        this.assetLoading = true;
+        if (!this.receiverAssets[this.selectedUserId]) {
 
-        this.assetList = await GetAssetList({
-          'assetName': assetName,
-          'userId': this.selectedUserId
-        });
+          this.assetLoading = true;
+          let assets = await GetAssetList({
+            'assetName': 'Record',
+            'userId': this.selectedUserId
+          });
+          
+          //classfy record into response record type
+          let userRecord = {}
+          this.assetCategory.forEach(type => {
+            let filtered = assets.filter(record => record.recordType == type);
+            
+            //save no empty list only
+            if (filtered.length > 0) {
+              userRecord[type] = filtered
+            }
+          });
 
-        this.assetLoading = false;
-
-        this.openAssetListMenu();
+          this.receiverAssets[this.selectedUserId] = userRecord;
+          this.assetLoading = false;
+        }
       }
 
+      let category = [];
+      let records = this.receiverAssets[this.selectedUserId];
+      for (let field in records) {
+        category.push(field);
+      }
+
+      this.assetCategory = category;
     },
+
+    onCategoryChange(val) {
+      if (val) {
+        let record = this.receiverAssets[this.selectedUserId];
+        this.assetList = record[val];
+        this.openAssetListMenu();
+      }
+    },
+    
 
     async fetchMyProfile() {
       try {

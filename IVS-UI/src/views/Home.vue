@@ -58,7 +58,6 @@
               <tr>
                 <td>{{ item.transactionId }}</td>
                 <td>{{ transationDate(item.transactionTimestamp) }}</td>
-                <td>{{ invokedUser(item.participantInvoking) }}</td>
                 <td>{{ transactionType(item.transactionType) }}</td>
               </tr>
             </template>
@@ -138,12 +137,7 @@ export default {
         },
         {
           sortable: false,
-          text: 'Invoked User',
-          value: 'block_number',
-        },
-        {
-          sortable: false,
-          text: 'Entity Type',
+          text: 'Action',
           value: 'total_transaction',
         }
       ],

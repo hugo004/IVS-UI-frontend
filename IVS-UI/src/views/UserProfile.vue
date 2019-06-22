@@ -16,7 +16,12 @@
           :tableData="myProfile" 
           offset="offset"
           tabColor="dark-grey"
-        />
+          color="dark-grey"
+        >
+          <template slot="header">
+            <span class="title text-capitalize">User Records</span>
+          </template>
+        </ivs-authorized-table>
       </v-flex>
       <v-flex
         xs12

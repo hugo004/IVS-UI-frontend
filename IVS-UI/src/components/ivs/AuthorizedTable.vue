@@ -7,8 +7,15 @@
         :name="slot"
         :slot="slot"
       ></slot>
-      
+
+      <div class="block text-xs-center">
+        <slot name="no-data">
+          <span v-if="fields.length == 0">No data available</span>
+        </slot>
+      </div>
+
       <v-tabs
+        v-if="fields.length > 0"
         dark
         icons-and-text
         show-arrows
@@ -66,9 +73,6 @@
         </v-tab-item>
       </v-tabs>
 
-      <div class="block text-xs-center">
-        <slot name="no-data"></slot>
-      </div>
 
       <v-dialog
         v-model="dialog"
@@ -142,11 +146,19 @@ export default {
 
   methods: {
     tableHeader(key) {
-      return this.tableData.get(key).headers || [];
+      if (this.tableData.get(key)) {
+        return this.tableData.get(key).headers || [];
+      }
+
+      return [];
     },
 
     tableItems(key) {
-      return this.tableData.get(key).items || [];
+      if (this.tableData.get(key)) {
+        return this.tableData.get(key).items || [];
+      }
+      
+      return [];
     },
 
     dataTimeString(dateString) {
