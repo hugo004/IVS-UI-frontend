@@ -98,7 +98,7 @@
             <v-select 
               class="text-capitalize"
               :items="channelMembers"
-              itemText="baseInfo.firstName"
+              itemText="baseInfo.userName"
               label="member"
               color="black"
               solo
@@ -135,7 +135,9 @@
                   multiple
                   chips
                   label="enter new member id/name e.g u-001/user001"
-                />
+                >
+                  <span slot="no-data" class="ma-4">no available member</span>
+                </v-combobox>
                 <v-textarea
                   v-model="inviteMessage"
                 />

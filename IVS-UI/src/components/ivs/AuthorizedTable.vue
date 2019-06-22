@@ -18,7 +18,7 @@
         <v-tabs-slider color="white"></v-tabs-slider>
         <!-- the category display authorize item only -->
         <v-tab 
-          v-for="(tab, index) in tableData.keys()" 
+          v-for="(tab, index) in fields" 
           :key="index"
           :href="`#tab-${index}`"
         >
@@ -26,7 +26,7 @@
         </v-tab>
 
         <v-tab-item
-          v-for="(key, i) in tableData.keys()" 
+          v-for="(key, i) in fields" 
           :key="i"
           :value="`tab-${i}`"
         >
@@ -65,6 +65,10 @@
           </v-card>
         </v-tab-item>
       </v-tabs>
+
+      <div class="block text-xs-center">
+        <slot name="no-data"></slot>
+      </div>
 
       <v-dialog
         v-model="dialog"
@@ -126,6 +130,16 @@ export default {
     fileName: ''
   }),
 
+  computed: {
+    fields() {
+      if (this.tableData) {
+        return [...this.tableData.keys()];
+      }
+
+      return [];
+    },
+  },
+
   methods: {
     tableHeader(key) {
       return this.tableData.get(key).headers || [];
@@ -141,32 +155,10 @@ export default {
 
     content(name, item) {
       let dataList = [];
-      if (name == 'Education') {
-        dataList.push(item.info.school);
-        dataList.push(item.info.major);
-        dataList.push(item.info.gpa);
-        dataList.push(this.dataTimeString(item.info.to));
-        dataList.push(this.dataTimeString(item.info.from));
-      }
-      else if (name == 'WorkExp') {
-        dataList.push(item.info.company);
-        dataList.push(this.dataTimeString(item.info.to));
-        dataList.push(this.dataTimeString(item.info.from));
-        dataList.push(item.info.jobTitle);
-        dataList.push(item.info.jobDuty);
-      }
-      else if (name == 'VolunteerRecord') {
-        dataList.push(this.dataTimeString(item.info.from));
-        dataList.push(item.name);
-        dataList.push(item.info.organization);
-        dataList.push(item.info.taskDescription);
-        dataList.push(item.info.hoursWorked);
-      }
-      else if (name == 'Record') {
-        dataList.push(this.dataTimeString(item.createTime));
-        dataList.push(item.name);
-        dataList.push(item.fileType);
-      }
+
+      dataList.push(this.dataTimeString(item.createTime));
+      dataList.push(item.name);
+      dataList.push(item.fileType);
 
       return dataList;
     },
