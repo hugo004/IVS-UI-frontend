@@ -36,7 +36,7 @@
             />
           </template>
           <template v-slot:items="props">
-            <tr>
+            <tr @click="viewRequestDetail(props.item)">
               <td class="text-xs-left">{{ props.item.requestName }}</td>
               <td class="text-xs-left">{{ props.item.senderName }}</td>
               <td class="text-xs-left">{{ new Date(props.item.createTime).toLocaleString() }}</td>
@@ -50,7 +50,7 @@
                   round
                   color="green"
                   dark
-                  @click="acceptOrDeny(props.item, 'ACCEPT')"
+                  @click.stop="acceptOrDeny(props.item, 'ACCEPT')"
                 >
                   Accept
                 </v-btn>
@@ -58,7 +58,7 @@
                   round
                   dark
                   color="grey"
-                  @click="acceptOrDeny(props.item, 'DENY')"
+                  @click.stop="acceptOrDeny(props.item, 'DENY')"
                 >
                   Deny
                 </v-btn>
@@ -69,6 +69,40 @@
       </material-card>
     </v-flex>
   </v-layout>
+
+  <v-dialog
+    v-model="dialog"
+    fullscreen
+    transition="dialog-bottom-transition"
+  >
+    <v-layout fill-height column>
+      <v-card
+        height="50px"
+        color="dark-grey"
+        class="elevation-5 text-xs-center"
+        dark
+      >
+        <span class="title dark-grey">{{ fileName }}</span>
+        <v-btn 
+          @click="dialog=false" 
+          fab
+          top
+          right
+          absolute
+          class="mt-5"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-card>
+
+      <iframe class="black" 
+        :src="fileUrl" 
+        frameborder="0" 
+        height="100%" 
+        align="middle"
+        />
+    </v-layout>
+  </v-dialog>
 </v-container>
 </template>
 
@@ -76,7 +110,8 @@
 import {
   GetAccessRequestList,
   UpdateRequestStatus,
-  UpdateChannelInvitationStatus
+  UpdateChannelInvitationStatus,
+  GetAsset
 } from '@/api/asset.js';
 
 export default {
@@ -123,6 +158,9 @@ export default {
       ],
       tableItems: [],
 
+      dialog: false,
+      fileUrl: '',
+      fileName: '',
     }
   },
 
@@ -196,6 +234,36 @@ export default {
 
       //refresh the list
       this.fetchRequestList();
+    },
+
+    async viewRequestDetail(info) {
+      try {
+        const {requestType} = info;
+        if (requestType == 'ASSET') {
+          console.log('getAsset');
+
+          this.$store.commit('setLoading', true);
+          let asset = await GetAsset({
+            'assetName': info.assetName,
+            'assetIds': info.requested
+          });
+          this.$store.commit('setLoading', false);
+
+          this.viewRecord(asset[0]);
+        }
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+      }
+    },
+
+    viewRecord(data) {
+      const {fileType, encrypted, name} = data;
+      let fileUrl = `data:${fileType};base64,${encrypted}#toolbar=0&navpanes=0&scrollbar=0`;
+      
+      this.fileName = name;
+      this.fileUrl = fileUrl;
+      this.dialog = true;
     }
   }
 }
