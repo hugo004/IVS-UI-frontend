@@ -159,7 +159,7 @@ export default {
   computed: {
     lastUpdated() {
       if (this.tableItems.length > 0) {
-        let last = this.tableItems[this.tableItems.length - 1];
+        let last = this.tableItems[0];
         return this.transationDate(last.creatTime);
       }
     }

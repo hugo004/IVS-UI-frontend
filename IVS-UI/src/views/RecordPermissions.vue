@@ -7,7 +7,7 @@
     <v-layout column>
       <v-flex>
         <ivs-authorized-table 
-          :tableData="authorizedData"
+          :tableData="authorizedAssetMap"
         >
           <template slot="header">
             <v-layout align-center>
@@ -29,7 +29,7 @@
             </v-layout>
             <v-select 
               :items="authorizeItem"
-              itemText="owner"
+              itemText="name"
               label="Authorize people"
               color="black--text white"
               :loading="loading"
@@ -262,7 +262,8 @@ import {
   RevokeAccessAsset,
   GetUserList,
   GetAssetList,
-  GetMyProfile
+  GetMyProfile,
+  GetAuthorziedItems
 } from '@/api/asset.js'
 
 import mixin from './js/mixins.js';
@@ -276,6 +277,7 @@ export default {
 
   data: () => ({
     authorizeItem: [],
+    definedCategory: [],
     assetCategory: [],
     loading: false,
     
@@ -297,6 +299,7 @@ export default {
 
     //the asset my authorized to other person
     authorizedAsset: new Map(),
+    selectedAuthorizedUser: {},
     myAuthenUserList: [],
     seletedUserInfo: {},
     myAuthenAssetLoading: false,
@@ -328,6 +331,7 @@ export default {
 
     await this.getUserList();
 
+
     
   },
 
@@ -337,6 +341,7 @@ export default {
       myProfile: state => state.myProfile
     }),
 
+    //me authorized to other
     myAuthorizedAsset() {
       const {id} = this.seletedUserInfo;
       let myAsset = this.authorizedAsset.get(id);
@@ -362,6 +367,26 @@ export default {
       }
 
       return true;
+    },
+
+    //other people authorized to me
+    authorizedAssetMap() {
+      const {id} = this.selectedAuthorizedUser;
+      let myAsset = this.authorizedData.get(id);
+
+      if (myAsset) {
+        let assetMap = new Map();
+        for (let field in myAsset) {
+          assetMap.set(field, {
+            'headers': this.headersMap.get(field),
+            'items': myAsset[field]
+          });
+        }
+
+        return assetMap;
+      }
+      
+      return new Map();
     }
     
   },
@@ -403,7 +428,7 @@ export default {
     async getAllRegistryAsset() {
       try {
         this.$store.commit('setLoading', true);
-        this.assetCategory = await GetAllRegistryAsset().then((result) => {
+        this.definedCategory = await GetAllRegistryAsset().then((result) => {
           let integrated = [];
           result.forEach(e => {
             let name = e.split('.');
@@ -445,71 +470,95 @@ export default {
           return result;
         });
 
-        let authoirzedList = await GetSentRequestList('ACCEPT').then(result => {
-          let authorized = [];
-          //get ACCEPT reqeust item, it the people authorize me, so put them on the list
-          let list = result || [];
-          list.push(...grantedList);
+        let _this = this;
+        let dataMap = await GetSentRequestList('ACCEPT').then(result => {
 
-          list.forEach(e => {
-            if (!authorized.includes(e.senderName)) {
-              authorized.push({
-                'owner': e.receiverName,
-                'assetName': e.assetName,
-                'assetIds': e.requested
-              });
+          // return authorized;
+          let requestList = result || [];
+          requestList.push(...grantedList);
+          
+          let integratedMap = new Map();
+
+          requestList.forEach(e => {
+            //ignore channel invitation request
+            if (e.requestType == 'CHANNEL') return;
+
+            let obj = {
+              'requestId': e.requestId
+            };
+            
+            let key = e.receiverId;
+            
+            //save same requester requestd asset together
+            if (integratedMap.has(key)) {
+              obj = integratedMap.get(key) || {};
+              let assetList = obj[e.assetName] || [];
+
+              if (assetList.length > 0) {
+                assetList.push(...e.requested);
+              }
+              else {
+                assetList.push(e.requested);
+              }
+
+              obj[e.assetName] = assetList;
+              integratedMap.set(key, obj);
             }
+            //for new requester
+            else {
+              obj[e.assetName] = e.requested;
+              integratedMap.set(key, obj);
+            }
+
+            //put the user, i authen to on the select list
+            let userInfo = {
+              'name': e.receiverName,
+              'id': e.receiverId
+            };
+
+            if (!_this.authorizeItem.includes(userInfo)) {
+              _this.authorizeItem.push(userInfo);
+            }
+
           });
 
-          return authorized;
+          return integratedMap;
         });
 
-        //put authorize item into different cateogry
-        let authorizedItems = [];
-        for (let i=0; i<authoirzedList.length; i++) {
-          let item = authoirzedList[i];
-            const {assetName, assetIds, owner} = item;
+        let authorizedMap = dataMap;
+        for (const [key, value] of authorizedMap.entries()) {
+          let obj = {};
 
-            let itemList =  await GetAsset({
-              'assetName': assetName,
+          for (let asset in value) {
+            //ingore request id, it is for revoke api call
+            if (asset == 'requestId') continue;
+
+            let assetIds = value[asset];
+            let assetList = await GetAsset({
+              'assetName': asset,
               'assetIds': assetIds
             });
 
 
-            let ownerData = new Map();
-            ownerData.set(assetName, {
-              'category': assetName,
-              'headers': this.headersMap.get(assetName),
-              'items': itemList
+            obj[asset] = assetList;
+          }
+
+            //classfy record into response record type
+            let authorizedRecord = {};
+            _this.definedCategory.forEach(type => {
+              let filtered = obj['Record'].filter(record => record.recordType == type);
+              
+              //save no empty list only
+              if (filtered.length > 0) {
+                authorizedRecord[type] = filtered
+              }
             });
 
-            //put same owner data in to array
-            let index = -1;
-            //get the index of authorized owner
-            for (let i in authorizedItems) {
-              let item = authorizedItems[i];
-              if (item.owner == owner) {
-                index = i;
-              }
-            }
 
-            
-            if (index > -1) {
-              let item = authorizedItems[index];
-              //if same owner, merge the items
-              let mergeItems = [...item.data.get(assetName).items, ...ownerData.get(assetName).items];
-              item.data.get(assetName).items = mergeItems;
-            }
-            else {
-              authorizedItems.push({
-                owner: owner,
-                data: ownerData
-              });
-            }
-
+          _this.authorizedData.set(key, authorizedRecord);
         }
 
-        this.authorizeItem = authorizedItems;
+        // this.authorizeItem = authorizedItems;
         this.loading = false;
 
       }
@@ -547,7 +596,8 @@ export default {
     },
 
     selectAuthorizeData(val) {
-      this.authorizedData = val.data;
+      this.selectedAuthorizedUser = val;
+      // this.authorizedData = val.data;
     },
 
     async fetchMyAuthorizedItem() {
@@ -625,7 +675,7 @@ export default {
           return integratedMap;
 
         });
-
+        
         let authorizedMap = authorizedData;
         for (const [key, value] of authorizedMap.entries()) {
           let obj = {};
@@ -648,7 +698,18 @@ export default {
             obj[asset] = assetList;
           }
 
-          _this.authorizedAsset.set(key, obj);
+            //classfy record into response record type
+            let grantedRecord = {};
+            _this.definedCategory.forEach(type => {
+              let filtered = obj['Record'].filter(record => record.recordType == type);
+              
+              //save no empty list only
+              if (filtered.length > 0) {
+                grantedRecord[type] = filtered
+              }
+            });
+
+          _this.authorizedAsset.set(key, grantedRecord);
         }
 
         _this.myAuthenAssetLoading = false;
@@ -740,7 +801,7 @@ export default {
           
           //classfy record into response record type
           let userRecord = {}
-          this.assetCategory.forEach(type => {
+          this.definedCategory.forEach(type => {
             let filtered = assets.filter(record => record.recordType == type);
             
             //save no empty list only
