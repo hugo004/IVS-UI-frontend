@@ -6,13 +6,14 @@
           <v-flex xs12 sm8 md4 class="text-xs-left">
             <v-card class="elevation-12">
               <v-card-title class="primary white--text title">
-                Login Form
+                Login Form {{ isVerifier ? '(Verifier)' : ''}}
                 <v-spacer></v-spacer>
                 <v-btn
                   icon
                   dark
                   small
                   @click="showRegistrationForm()"
+                  v-if="!isVerifier"
                 >
                   <v-icon>fas fa-user-plus</v-icon>
                 </v-btn>
@@ -38,6 +39,7 @@
                     prepend-icon="lock"
                     label="Password"
                     type="password"
+                    @keydown.enter="login()"
                   ></v-text-field>
                 </v-form>
               </v-card-text>
@@ -58,7 +60,7 @@
     <v-dialog
       persistent
       v-model="dialog"
-      max-width="500"
+      max-width="800"
     >
       <ivs-registration-form 
         ref="registForm"
@@ -92,6 +94,7 @@
 <script>
 import { 
   LoginIVS,
+  VerifierLoginIVS,
   Registration
 } from "@/api/auth.js";
 
@@ -117,21 +120,46 @@ export default {
       'lastName': '',
       'email': '',
       'phone': ''
-    }
+    },
+
+    isVerifier: false
   }),
+
+  created() {
+    const {verifier} = this.$route.query;
+    console.log(verifier)
+    if (verifier) {
+      this.isVerifier = true;
+    }
+    else {
+      this.isVerifier = false;
+    }
+
+  },
 
   methods: {
     async login() {
+
       try {
         if (this.$refs.form.validate()) {
           this.loading = true;
-          let resposne = await LoginIVS({
-            userName: this.userName,
-            password: this.password
-          });
+          let response;
+          
+          if (this.isVerifier) {
+            response = await VerifierLoginIVS({
+              userName: this.userName,
+              password: this.password
+            });
+          }
+          else {
+            response = await LoginIVS({
+              userName: this.userName,
+              password: this.password
+            });
+          }
           this.loading = false;
-          localStorage.setItem('token', resposne.accessToken);
-          localStorage.setItem('userInfo', resposne.userInfo);
+          localStorage.setItem('token', response.accessToken);
+          localStorage.setItem('userInfo', response.userInfo);
           location.href = '/';
         }
       }

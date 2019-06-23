@@ -7,8 +7,15 @@
         :name="slot"
         :slot="slot"
       ></slot>
-      
+
+      <div class="block text-xs-center">
+        <slot name="no-data">
+          <span v-if="fields.length == 0">No data available</span>
+        </slot>
+      </div>
+
       <v-tabs
+        v-if="fields.length > 0"
         dark
         icons-and-text
         show-arrows
@@ -18,7 +25,7 @@
         <v-tabs-slider color="white"></v-tabs-slider>
         <!-- the category display authorize item only -->
         <v-tab 
-          v-for="(tab, index) in tableData.keys()" 
+          v-for="(tab, index) in fields" 
           :key="index"
           :href="`#tab-${index}`"
         >
@@ -26,7 +33,7 @@
         </v-tab>
 
         <v-tab-item
-          v-for="(key, i) in tableData.keys()" 
+          v-for="(key, i) in fields" 
           :key="i"
           :value="`tab-${i}`"
         >
@@ -39,7 +46,7 @@
                 :style="tableStyle"
               >
                 <template v-slot:items="props">
-                  <tr>
+                  <tr @click="onItemClick(props.item)" class="record-detail">
                     <td 
                       v-for="(data,index) in content(key, props.item)"
                       :key="index"
@@ -51,9 +58,10 @@
                         <v-btn
                           small
                           color="primary"
-                          @click="$emit('click', props.item)"
+                          @click.stop="$emit('click', props.item)"
                         >
-                          revoke
+                          <v-icon small>fas fa-lock</v-icon>
+                          <span class="heading px-2">revoke</span>
                         </v-btn>
                       </td>
                   </tr>
@@ -64,6 +72,41 @@
           </v-card>
         </v-tab-item>
       </v-tabs>
+
+
+      <v-dialog
+        v-model="dialog"
+        fullscreen
+        transition="dialog-bottom-transition"
+      >
+        <v-layout fill-height column>
+          <v-card
+            height="50px"
+            color="dark-grey"
+            class="elevation-5 text-xs-center"
+            dark
+          >
+            <span class="title dark-grey">{{ fileName }}</span>
+            <v-btn 
+              @click="dialog=false" 
+              fab
+              top
+              right
+              absolute
+              class="mt-5"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-card>
+
+          <iframe class="black" 
+            :src="fileUrl" 
+            frameborder="0" 
+            height="100%" 
+            align="middle"
+            />
+        </v-layout>
+      </v-dialog>
   </material-card>
 </template>
 
@@ -86,139 +129,67 @@ export default {
   },
 
   data: () => ({
-
-    //education
-    educationHeaders: [
-      {
-        text: 'School',
-        value: 'school',
-        sortable: false
-      },
-
-      {
-        text: 'Major',
-        value: 'major',
-        sortable: false
-      },
-
-      {
-        text: 'From',
-        value: 'from',
-        sortable: false
-      },
-
-      {
-        text: 'To',
-        value: 'to',
-        sortable: false
-      }
-    ],
-
-    //work exp
-    workExpHeaders: [
-      {
-        text: 'Name',
-        value: 'cname',
-        sortable: false
-      },
-
-      {
-        text: 'From',
-        value: 'workfrom',
-        sortable: false
-      },
-
-      {
-        text: 'To',
-        value: 'workto',
-        sortable: false
-      },
-
-      {
-        text: 'Job Title',
-        value: 'job',
-        sortable: false
-      },
-
-      {
-        text: 'Job Duty',
-        value: 'jobduty',
-        sortable: false
-      },
-    ],
-
-    //vomlunteer record
-    volunteerHeaders: [
-      {
-        text: 'Event Name',
-        value: 'evetn name',
-        sortable: false
-      },
-
-      {
-        text: 'Hold By',
-        value: 'holde by',
-        sortable: false
-      },
-
-      {
-        text: 'Description',
-        value: 'desc',
-        sortable: false
-      }
-    ],
+    dialog: false,
+    fileUrl: '',
+    fileName: ''
   }),
+
+  computed: {
+    fields() {
+      if (this.tableData) {
+        return [...this.tableData.keys()];
+      }
+
+      return [];
+    },
+  },
 
   methods: {
     tableHeader(key) {
-      return this.tableData.get(key).headers || [];
+      if (this.tableData.get(key)) {
+        return this.tableData.get(key).headers || [];
+      }
+
+      return [];
     },
 
     tableItems(key) {
-      return this.tableData.get(key).items || [];
+      if (this.tableData.get(key)) {
+        return this.tableData.get(key).items || [];
+      }
+      
+      return [];
     },
 
     dataTimeString(dateString) {
       return new Date(dateString).toLocaleDateString();
     },
-    test() {
-      console.log('s')
-    },
-    action(item) {
-      if (this.showAction) {
-        return `
-          <td class="text-xs-right">
-              <a
-                class="v-btn v-btn--small theme--light primary"
-                @click.prevent="test()"
-              >revoke</a>
-            </td>
-        `;
-      }
-
-      return '';
-    },
 
     content(name, item) {
       let dataList = [];
-      if (name == 'Education') {
-        dataList.push(item.info.school);
-        dataList.push(item.info.major);
-        dataList.push(this.dataTimeString(item.info.to));
-        dataList.push(this.dataTimeString(item.info.from));
-      }
-      else if (name == 'WorkExp') {
-        dataList.push(item.info.company);
-        dataList.push(this.dataTimeString(item.info.to));
-        dataList.push(this.dataTimeString(item.info.from));
-        dataList.push(item.info.jobTitle);
-        dataList.push(item.info.jobDuty);
-      }
-      else if (name == 'VolunteerRecord') {
-      }
+
+      dataList.push(this.dataTimeString(item.createTime));
+      dataList.push(item.name);
+      dataList.push(item.fileType);
 
       return dataList;
     },
+
+    onItemClick(item) {
+      const {$class} = item;
+      if ($class == 'org.example.ivsnetwork.Record') {
+        this.viewRecord(item);
+      }
+    },
+
+    viewRecord(data) {
+      const {fileType, encrypted, name} = data;
+      let fileUrl = `data:${fileType};base64,${encrypted}#toolbar=0&navpanes=0&scrollbar=0`;
+      
+      this.fileName = name;
+      this.fileUrl = fileUrl;
+      this.dialog = true;
+    }
   }
 }
 </script>

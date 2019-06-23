@@ -53,7 +53,7 @@
 <script>
 export default {
   data: () => ({
-    isLogin: localStorage.getItem('token') ? true : false
+    isLogin: localStorage.getItem('token') ? true : false,
   }),
 
 
@@ -98,9 +98,21 @@ export default {
   },
 
   created() {
+    let userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+    const {accountType} = userInfo;
+    let isVerifier = accountType == 'Verifier' ? true : false;
+    this.$store.commit('setVerifier', isVerifier);
+
     if (this.isLogin) {
-      this.$router.push('/dashboard');
+      if (isVerifier) {
+        this.$router.push('/verify');
+      }
+      else {
+        this.$router.push('/dashboard');
+      }
     }
+
+
   }
 }
 </script>
@@ -117,6 +129,10 @@ export default {
 .v-dialog {
   box-shadow: none; 
   text-align: center
+}
+
+.record-detail :hover {
+  cursor: pointer;
 }
 
 </style>

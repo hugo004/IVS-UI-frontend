@@ -12,14 +12,14 @@
   >
     <v-flex xs12>
       <material-card 
-        title="Notifications"
+        title="Verification"
         :text="`Last updated at ${lastUpdated}`"
       >        
         <v-btn
           slot="header-actions" 
           dark
           flat
-          @click="fetchRequestList()"
+          @click="fetchVerifyRecordList()"
         >
           <v-icon>refresh</v-icon>
           <span class="heading px-1">Refresh</span>
@@ -36,31 +36,23 @@
             />
           </template>
           <template v-slot:items="props">
-            <tr @click="viewRequestDetail(props.item)">
-              <td class="text-xs-left">{{ props.item.requestName }}</td>
-              <td class="text-xs-left">{{ props.item.senderName }}</td>
-              <td class="text-xs-left">{{ new Date(props.item.createTime).toLocaleString() }}</td>
-              <td class="text-xs-left">{{ props.item.status }}</td>
-              <td class="text-xs-left">{{ props.item.remarks }}</td>
+            <tr @click="viewRecord(props.item)" class="record-detail">
+              <td class="text-xs-left">{{ dataTimeString(props.item.creatTime) }}</td>
+              <td class="text-xs-left">{{ props.item.name }}</td>
+              <td class="text-xs-left">{{ props.item.owner.baseInfo.userName }}</td>
+              <td class="text-xs-left">{{ props.item.isVerify ? 'Verified' : 'Not Verify' }}</td>
+
               <td 
-                v-if="isUndetermined(props.item.status)"
+                v-if="!props.item.isVerify"
                 class="text-xs-right"
               >
                 <v-btn
                   round
                   color="green"
                   dark
-                  @click.stop="acceptOrDeny(props.item, 'ACCEPT')"
+                  @click.stop="verify(props.item, true)"
                 >
-                  Accept
-                </v-btn>
-                <v-btn
-                  round
-                  dark
-                  color="grey"
-                  @click.stop="acceptOrDeny(props.item, 'DENY')"
-                >
-                  Deny
+                  Verify
                 </v-btn>
               </td>
             </tr>
@@ -108,22 +100,27 @@
 
 <script>
 import {
-  GetAccessRequestList,
-  UpdateRequestStatus,
-  UpdateChannelInvitationStatus,
-  GetAsset
-} from '@/api/asset.js';
+  GetRecords,
+  VerifyRecord
+} from '@/api/record.js'
 
 export default {
-  name: 'Notifications',
+  name: 'Verify',
   data() 
   {
     return {
-      tableHeaders: [{
-          text: 'Event',
+      tableHeaders: [
+        {
+          text: 'Date',
           align: 'left',
           sortable: false,
-          value: 'new_event_icon'
+          value: 'date'
+        },
+        {
+          text: 'Name',
+          align: 'left',
+          sortable: false,
+          value: 'name'
         },
         {
           text: 'From',
@@ -132,23 +129,12 @@ export default {
           value: 'from'
         },
         {
-          text: 'Date',
-          align: 'left',
-          sortable: false,
-          value: 'date'
-        },
-        {
           text: 'Status',
           align: 'left',
           sortable: false,
           value: 'status'
         },
-        {
-          text: 'Remarks',
-          align: 'left',
-          sortable: false,
-          value: 'remarks'
-        },
+
         {
           text: '',
           align: 'left',
@@ -160,19 +146,21 @@ export default {
 
       dialog: false,
       fileUrl: '',
-      fileName: '',
+      fileName: ''
+      
+
     }
   },
 
   mounted() {
-    this.fetchRequestList();
+    this.fetchVerifyRecordList();
   },
 
   computed: {
     lastUpdated() {
       if (this.tableItems.length > 0) {
         let last = this.tableItems[0];
-        return this.transationDate(last.createTime);
+        return this.transationDate(last.creatTime);
       }
     }
   },
@@ -182,19 +170,14 @@ export default {
       return new Date(dateStr).toLocaleString()
     },
 
-    isUndetermined(status) {
-      if (status.toLowerCase() == "undetermined")
-      {
-        return true;
-      }
-
-      return false;
+    dataTimeString(dateString) {
+      return new Date(dateString).toLocaleDateString();
     },
 
-    async fetchRequestList() {
+    async fetchVerifyRecordList() {
       try {
         this.$store.commit('setLoading', true);
-        this.tableItems = await GetAccessRequestList();
+        this.tableItems = await GetRecords();
         this.$store.commit('setLoading', false);
       }
       catch (error) {
@@ -202,60 +185,26 @@ export default {
       }
     },
 
-    async acceptOrDeny(request, status) {
-      const {
-        requestId, 
-        senderId, 
-        assetName,
-        requested,
-        requestType
-      } = request;
-
-      this.$store.commit('setLoading', true);
-      if (requestType == 'CHANNEL') {
-        await UpdateChannelInvitationStatus({
-          'channelId': senderId,
-          'requestId': requestId,
-          'status': status
-        });
-      }
-      else {
-        await UpdateRequestStatus({
-          'senderId': senderId,
-          'requestId': requestId,
-          'assetName': assetName,
-          'authorizeList': requested,
-          'newStatus': status
-        });
-      }
-      this.$store.commit('setLoading', false);
-      this.$store.commit('setMessage', 'Request status updated')
-      this.$store.commit('showNotification');
-
-      //refresh the list
-      this.fetchRequestList();
-    },
-
-    async viewRequestDetail(info) {
+    async verify(record, status) {
       try {
-        const {requestType} = info;
-        if (requestType == 'ASSET') {
-          console.log('getAsset');
-
-          this.$store.commit('setLoading', true);
-          let asset = await GetAsset({
-            'assetName': info.assetName,
-            'assetIds': info.requested
-          });
-          this.$store.commit('setLoading', false);
-
-          this.viewRecord(asset[0]);
-        }
+        this.$store.commit('setLoading', true);
+    
+        await VerifyRecord({
+          recordId: record.assetId,
+          recordName: record.name,
+          ownerId: record.owner.userId,
+          ownerName: record.owner.baseInfo.userName,
+          isVerify: status
+        });
+        
+        this.$store.commit('setLoading', false);
+        this.fetchVerifyRecordList();
       }
       catch (error) {
         this.$store.commit('showError', error);
       }
     },
+
 
     viewRecord(data) {
       const {fileType, encrypted, name} = data;
@@ -265,6 +214,9 @@ export default {
       this.fileUrl = fileUrl;
       this.dialog = true;
     }
+
   }
 }
 </script>
+
+

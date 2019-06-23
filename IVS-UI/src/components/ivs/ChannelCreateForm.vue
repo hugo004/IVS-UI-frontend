@@ -25,7 +25,7 @@
           <v-flex xs12>
             <v-combobox 
               v-model="channelInfo.members"
-              :items="userList"
+              :items="itemList"
               itemText="baseInfo.userName"
               :loading="userLoading"
               label="Invite channel member"
@@ -33,7 +33,9 @@
               multiple
               chips
               return-object
-            />
+            >
+              <span slot="no-data" class="ma-4">no avaiable member</span>
+            </v-combobox>
           </v-flex>
         </v-layout>
       </v-card-text>
@@ -76,18 +78,14 @@ export default {
 
   data: () => ({
     isValidForm: true,
-    userLoading: false,
-    userList: []
+    userLoading: false
   }),
 
   watch: {
     loading(val) {
       this.userLoading = val;
-    },
-
-    itemList(val) {
-      this.userList = val;
     }
+
   },
 
   methods: {

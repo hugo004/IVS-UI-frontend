@@ -58,7 +58,6 @@
               <tr>
                 <td>{{ item.transactionId }}</td>
                 <td>{{ transationDate(item.transactionTimestamp) }}</td>
-                <td>{{ invokedUser(item.participantInvoking) }}</td>
                 <td>{{ transactionType(item.transactionType) }}</td>
               </tr>
             </template>
@@ -75,10 +74,10 @@
     >
       <v-card>
         <v-card-text>
-          <ivs-upload-record 
-            :myRecord.sync="record" 
-            class="text-xs-left"
-            :loading="loading"
+          <ivs-file-upload-form 
+            ref="file"
+            :recordType.sync="recordType"
+            :verifier.sync="verifier"
           />
         </v-card-text>
         <v-divider></v-divider>
@@ -92,7 +91,7 @@
           </v-btn>
 
           <v-btn color="primary" 
-          @click="saveRecord(record)" 
+          @click="saveRecord()" 
           :loading="loading"
           >
             Create
@@ -105,8 +104,7 @@
 
 <script>
 import { 
-  CreateRecord,
-  GetRecords
+  UploadRecord
 } from "@/api/record.js";
 
 import {
@@ -139,20 +137,14 @@ export default {
         },
         {
           sortable: false,
-          text: 'Invoked User',
-          value: 'block_number',
-        },
-        {
-          sortable: false,
-          text: 'Entity Type',
+          text: 'Action',
           value: 'total_transaction',
         }
       ],
       items: [],
-
       channels: [],
-
-      record: null
+      recordType: 'Other',
+      verifier: ''
 
 
     }
@@ -160,40 +152,35 @@ export default {
   
   async mounted()
   {
-    this.fetchHistoryTransaction();
+    await this.fetchChannel();
 
-    this.fetchChannel();
+    await this.fetchHistoryTransaction();
 
   },
 
   computed: {
     latestTranstionTime() {
       if (this.items.length > 0) {
-        let last = this.items[this.items.length - 1];
+        let last = this.items[0];
         return this.transationDate(last.transactionTimestamp);
       }
     }
   },
 
   methods: {
-    async saveRecord(record){
+    async saveRecord(){
       try {
-        console.log(record);
-        if (record) {
-          this.loading = true;
 
-          const {educations, workExps, volunteer} = record;
-          await UploadAsset({
-            'educations': educations,
-            'workExps': workExps,
-            'volunteerRecords':volunteer
-          });
+          if (this.$refs.file.validate()) {
+            this.loading = true;
+            let files = this.$refs.file.files();
+            await UploadRecord(files, this.recordType, this.verifier);
 
-          this.loading = false;
-          this.upload = false;
+            this.loading = false;
+            this.upload = false;
 
-          this.$store.commit('showSuccess', 'Record Uploaded');
-        }
+            this.$store.commit('showSuccess', 'Record Uploaded');
+          }
       }
       catch (error) {
         this.$store.commit('showError', error);

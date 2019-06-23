@@ -1,9 +1,9 @@
 import axios from "@/api/httpRequest.js";
-// import axios from "axios"
+import myAxios from "axios"
 
 export const GetRecords = () => {
     return axios.request({
-        url: "/Record",
+        url: "/getVerifyRecord",
         method: "get"
     });
 };
@@ -70,5 +70,59 @@ export const DeleteRecord = (id) => {
         url: "/Record",
         method: "delete",
         params
+    });
+}
+
+
+export const UploadRecord = (files, recordType, verifier) => {
+
+    let formData = new FormData();
+    formData.append('recordType', recordType);
+    formData.append('relateVerifier', verifier);
+    for(let i = 0; i < files.length; i++) {
+        console.log(files[i])
+      formData.append('records', files[i]);
+    }
+    
+
+    return axios.uploadFile('UploadRecordFiles', formData,{
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+
+}
+
+export const VerifyRecord = ({
+    isVerify,
+    recordId,
+    recordName,
+    ownerId,
+    ownerName
+}) => {
+    const data = {
+        isVerify: isVerify,
+        recordId: recordId,
+        recordName: recordName,
+        ownerId: ownerId,
+        ownerName: ownerName
+    };
+
+    return axios.request({
+        url: '/verifyRecord',
+        method: 'put',
+        data: data
+    });
+}
+
+export const GetVerifierList = (verifierType) => {
+    const params = {
+        verifierType: verifierType
+    };
+
+    return axios.request({
+        url: '/getVerifierList',
+        method: 'get',
+        params: params
     });
 }

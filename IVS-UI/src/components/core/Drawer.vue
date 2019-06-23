@@ -29,7 +29,7 @@
         </v-list-tile>
         <v-divider/>
         <v-list-tile
-          v-for="(link, i) in links"
+          v-for="(link, i) in menus"
           :key="i"
           :to="link.to"
           :active-class="color"
@@ -80,7 +80,7 @@ export default {
         text: 'Notifications'
       }
     ],
-    responsive: false
+    responsive: false,
   }),
   computed: {
     ...mapState('app', ['image', 'color', 'userInfo']),
@@ -98,18 +98,42 @@ export default {
 
     username() {
       
-      if (localStorage.getItem('userInfo')) {
-        let userInfoStr = localStorage.getItem('userInfo');
-        let userInfo = JSON.parse(userInfoStr).baseInfo;
-        return userInfo.userName;
+      let userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
+      if (userInfo) {
+        const {accountType} = userInfo;
+        if (accountType == 'User') {
+          return userInfo.baseInfo.userName;
+        }
+        else {
+          return userInfo.userName
+        }
       }
 
       return '';
+    },
+
+    menus() {
+      let userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+      if (this.$store.state.isVerifier) {
+        return [
+          {
+            to: '/verify',
+            icon: 'mdi-view-dashboard',
+            text: 'Dashboard'
+          }
+        ];
+      }
+      else {
+        return this.links;
+      }
     }
   },
+  
   mounted () {
     this.onResponsiveInverted()
     window.addEventListener('resize', this.onResponsiveInverted)
+
   },
   beforeDestroy () {
     window.removeEventListener('resize', this.onResponsiveInverted)

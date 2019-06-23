@@ -20,7 +20,7 @@
           <span class="heading px-2">Create Channel</span>
         </v-btn>
       </v-flex>
-      <v-flex xs12 class="pa-0">
+      <v-flex xs12>
         <v-layout row wrap>
           <v-flex 
             v-for="(channel,index) in myChannels"
@@ -45,8 +45,34 @@
           </v-flex>
         </v-layout>
       </v-flex>
+
+      <v-flex xs12>
+        <ivs-authorized-table
+          v-if="showChannelInfo"
+          :tableData="channelData"
+        >
+          <template slot="header">
+            <v-layout align-center>
+              <v-flex>
+                <span class="title text-capitalize">{{ selectedChannel.name || ''}}'s record</span>
+              </v-flex>
+              <v-flex xs3 class="text-xs-right mx-2">
+                <v-btn
+                  round
+                  color="primary"
+                  class="elevation-1"
+                  @click="addChannelAssetDialog()"
+                >
+                  add channel record
+                </v-btn>
+              </v-flex>
+            </v-layout>
+          <v-progress-linear :indeterminate="true" v-if="channelTableLoading" color="white" />
+          </template>
+        </ivs-authorized-table>
+      </v-flex>
       
-      <v-flex class="pa-0">
+      <v-flex>
         <ivs-authorized-table
           v-if="showChannelInfo"
           :tableData="authorizedData"
@@ -72,7 +98,7 @@
             <v-select 
               class="text-capitalize"
               :items="channelMembers"
-              itemText="baseInfo.firstName"
+              itemText="baseInfo.userName"
               label="member"
               color="black"
               solo
@@ -88,7 +114,7 @@
     <v-dialog 
       v-model="dialog"
       persistent
-      max-width="500"
+      max-width="800"
     >
       <template v-if="inviteNewMember">
         <v-form
@@ -109,7 +135,9 @@
                   multiple
                   chips
                   label="enter new member id/name e.g u-001/user001"
-                />
+                >
+                  <span slot="no-data" class="ma-4">no available member</span>
+                </v-combobox>
                 <v-textarea
                   v-model="inviteMessage"
                 />
@@ -163,6 +191,35 @@
         </v-card>
       </template>
 
+      <template v-else-if="isChannelAsset">
+        <v-card>
+          <v-card-text>
+            <ivs-file-upload-form 
+              ref="file"
+              :show-verifier="false"  
+            />
+          </v-card-text>
+          <v-divider></v-divider>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn 
+              outline 
+              @click="channelAssetDialogCancel()"
+            >
+              close
+            </v-btn>
+
+            <v-btn 
+              color="primary" 
+              @click="addChannelAsset()"
+              :loading="channelLoading"
+            >
+              upload
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </template>
+
       <template v-else>
         <ivs-channel-create-form 
           ref="form"
@@ -197,7 +254,9 @@
 
 import {
   GetUserChannel,
-  CreateChannel
+  CreateChannel,
+  UploadChannelAsset,
+  GetChannelAssets
 } from '@/api/channel.js';
 
 
@@ -213,6 +272,8 @@ import {
 } from '@/api/asset.js'
 
 import mixin from './js/mixins.js';
+import { mapState } from 'vuex';
+import { error } from 'util';
 
 export default {
   name: 'ChannelManagement',
@@ -231,88 +292,10 @@ export default {
       'members': []
     },
 
-    //channel members asset
-    headersMap: new Map([
-      ['Education', [
-        {
-          text: 'School',
-          value: 'school',
-          sortable: false
-        },
-
-        {
-          text: 'Major',
-          value: 'major',
-          sortable: false
-        },
-
-        {
-          text: 'From',
-          value: 'from',
-          sortable: false
-        },
-
-        {
-          text: 'To',
-          value: 'to',
-          sortable: false
-        }
-      ]],
-      ['WorkExp', [
-        {
-          text: 'Company',
-          value: 'cname',
-          sortable: false
-        },
-
-        {
-          text: 'From',
-          value: 'workfrom',
-          sortable: false
-        },
-
-        {
-          text: 'To',
-          value: 'workto',
-          sortable: false
-        },
-
-        {
-          text: 'Job Title',
-          value: 'job',
-          sortable: false
-        },
-
-        {
-          text: 'Job Duty',
-          value: 'jobduty',
-          sortable: false
-        }
-      ]],
-      ['VolunteerRecord', [
-        {
-          text: 'Event Name',
-          value: 'evetn name',
-          sortable: false
-        },
-
-        {
-          text: 'Hold By',
-          value: 'holde by',
-          sortable: false
-        },
-
-        {
-          text: 'Description',
-          value: 'desc',
-          sortable: false
-        }
-      ]]
-    ]),
 
     showChannelInfo: false,
 
-    channelAssets: [],
+    channelAssets: {},
     selectedChannel: null,
     selectedMemberId: '',
     selectedMemberInfo: {},
@@ -328,7 +311,13 @@ export default {
     //user list
     userLoading: false,
     userList: [],
-    invitableList: []
+    invitableList: [],
+
+    //add channel asset
+    isChannelAsset: false,
+    channelLoading: false,
+    channelData: new Map(),
+    channelTableLoading: false
 
   }),
 
@@ -342,9 +331,15 @@ export default {
   },
 
   computed: {
+    ...mapState({
+      headersMap: state => state.assetHeadersMap
+    }),
+    
     myChannels() {
       return this.$store.state.myChannels;
     },
+
+
 
     authorizedData() {
       let memberInfo = this.channelAssets[this.selectedMemberId];
@@ -460,9 +455,9 @@ export default {
 
             //not display the reqeust asset, it display in notification page
             // record asset is for profile page
-            if (name != 'Request' && name != 'Record') {
+            // if (name != 'Request' || name != 'Record') {
               integrated.push(name);
-            }
+            // }
           });
 
           return integrated;
@@ -504,11 +499,13 @@ export default {
         }
 
         //get channel members assets
-        this.channelAssets = await GetChannelMemberAssets(memberIds);
+        // this.channelAssets = await GetChannelMemberAssets(memberIds);
         this.$store.commit('setLoading', false);
 
         //make the invitable channel list, which exclude the current channel members
         this.invitableList = this.userList.filter(e => !memberIds.includes(e.userId));
+
+        this.fetchChannelAsset();
 
       }
       catch (error) {
@@ -516,8 +513,29 @@ export default {
       }
     },
 
-    viewMember(member) {
-      this.selectedMemberId = member.userId;
+    async viewMember(member) {
+      let memberIds = member.userId;
+
+      //get member data, if empty
+      let data = this.channelAssets[memberIds];
+      if (data) {
+        this.selectedMemberId = memberIds;
+        return;
+      }
+
+      try {
+        this.$store.commit('setLoading', true);
+
+        let memberAsset = await GetChannelMemberAssets([memberIds]);
+        Object.assign(this.channelAssets, memberAsset);
+        this.selectedMemberId = memberIds;
+
+        this.$store.commit('setLoading', false);
+
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+      }
     },
 
     memberInviteForm() {
@@ -595,6 +613,69 @@ export default {
       catch (error) {
         this.$store.commit('showError', error);
         this.userLoading = false;
+      }
+    },
+
+    async fetchChannelAsset() {
+      try {
+        if (this.selectedChannel) {
+          this.channelTableLoading = true;
+          
+          const {channelId} = this.selectedChannel;
+          this.channelData = await GetChannelAssets(channelId).then(result => {
+            let assetMap = new Map();
+
+            assetMap.set('Record', {
+              'headers': this.headersMap.get('Record'),
+              'items': result
+            });
+
+            return assetMap;
+          });
+
+          this.channelTableLoading = false;
+
+        }
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+        this.channelTableLoading = false;
+      }
+    },
+
+    addChannelAssetDialog() {
+      this.dialog = true;
+      this.isChannelAsset = true;
+    },
+
+    channelAssetDialogCancel() {
+      this.dialog = false;
+      this.isChannelAsset = false;
+    },
+
+    async addChannelAsset() {
+      try {
+      if (this.$refs.file.validate()) {
+        const files = this.$refs.file.files();
+        if (files) {
+          this.channelLoading = true;
+          const {channelId} = this.selectedChannel;
+
+          await UploadChannelAsset({
+            channelId: channelId,
+            files: files
+          });
+
+          this.channelAssetDialogCancel();
+          this.$store.commit('showSuccess', 'Channel record uploaded');
+          this.fetchChannelAsset();
+
+        }
+      }
+      }
+      catch (error) {
+        this.$store.commit('showError', error);
+        this.channelLoading = false;
       }
     }
   }

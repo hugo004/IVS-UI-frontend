@@ -1,84 +1,85 @@
 // https://vuex.vuejs.org/en/state.html
 
 export default {
+  //verifier
+  isVerifier: false,
   //user info
-  userInfo: null,
   myChannels: [],
+  
+  //my profile
+  myProfile: null,
 
   //asset header map
   assetHeadersMap: new Map([
-    ['Education', [
+    ['Education',[
       {
-        text: 'School',
-        value: 'school',
+        text: 'Date',
+        value: 'date',
+        sortable: true
+      },
+      {
+        text: 'File Name',
+        value: 'fn',
         sortable: false
       },
 
       {
-        text: 'Major',
-        value: 'major',
-        sortable: false
-      },
-
-      {
-        text: 'From',
-        value: 'from',
-        sortable: false
-      },
-
-      {
-        text: 'To',
-        value: 'to',
+        text: 'File Type',
+        value: 'ft',
         sortable: false
       }
     ]],
-    ['WorkExp', [
+    ['WorkExp',[
       {
-        text: 'Company',
-        value: 'cname',
+        text: 'Date',
+        value: 'date',
+        sortable: true
+      },
+      {
+        text: 'File Name',
+        value: 'fn',
         sortable: false
       },
 
       {
-        text: 'From',
-        value: 'workfrom',
-        sortable: false
-      },
-
-      {
-        text: 'To',
-        value: 'workto',
-        sortable: false
-      },
-
-      {
-        text: 'Job Title',
-        value: 'job',
-        sortable: false
-      },
-
-      {
-        text: 'Job Duty',
-        value: 'jobduty',
+        text: 'File Type',
+        value: 'ft',
         sortable: false
       }
     ]],
-    ['VolunteerRecord', [
+    ['Volunteer',[
       {
-        text: 'Event Name',
-        value: 'evetn name',
+        text: 'Date',
+        value: 'date',
+        sortable: true
+      },
+      {
+        text: 'File Name',
+        value: 'fn',
         sortable: false
       },
 
       {
-        text: 'Hold By',
-        value: 'holde by',
+        text: 'File Type',
+        value: 'ft',
+        sortable: false
+      }
+    ]],
+    ['Record', [
+      {
+        text: 'Date',
+        value: 'date',
+        sortable: true
+      },
+      {
+        text: 'File Name',
+        value: 'fn',
         sortable: false
       },
 
       {
-        text: 'Description',
-        value: 'desc',
+        text: 'File Type',
+        value: 'ft',
         sortable: false
       }
     ]]

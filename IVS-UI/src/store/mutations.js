@@ -5,6 +5,15 @@ export default {
     state.myChannels = myChannel;
   },
 
+  setVerifier(state, isVerifier) {
+    state.isVerifier = isVerifier;
+  },
+
+  //profile
+  setProfile(state, myProfile) {
+    state.myProfile = myProfile;
+  },
+
   //notification control
   showNotification(state, args=['top', 'right']) {
     state.top = false
