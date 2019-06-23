@@ -417,13 +417,6 @@ export default {
       }
     },
 
-    tableHeader(key) {
-      return this.authorizedData.get(key).headers || [];
-    },
-
-    tableItems(key) {
-      return this.authorizedData.get(key).items || [];
-    },
 
     async classifyAuthorizedItem(authorizedByMe=false) {
       let grantedList = [];
