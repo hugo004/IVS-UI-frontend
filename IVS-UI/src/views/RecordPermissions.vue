@@ -425,6 +425,136 @@ export default {
       return this.authorizedData.get(key).items || [];
     },
 
+    async classifyAuthorizedItem(authorizedByMe=false) {
+      let grantedList = [];
+      let requestList = [];
+      let _this = this;
+
+      if (authorizedByMe) {
+        grantedList = await GetSentRequestList('GRANT').then(result => {
+          //exchange the sender and receiver filed value
+          result.forEach(e => {
+            const {receiverId, receiverName, senderId, senderName} = e;
+            e['receiverId'] = senderId;
+            e['receiverName'] = senderName;
+            e['senderId'] = receiverId;
+            e['senderName'] = receiverName;
+          });
+
+          return result;
+        });
+
+        requestList = await GetAccessRequestList('ACCEPT');
+      }
+      else {
+        //fetech authorize item
+        grantedList = await GetAccessRequestList('GRANT').then(result => {
+          //exchange the sender and receiver filed value
+          result.forEach(e => {
+            const {receiverId, receiverName, senderId, senderName} = e;
+            e['receiverId'] = senderId;
+            e['receiverName'] = senderName;
+            e['senderId'] = receiverId;
+            e['senderName'] = receiverName;
+          });
+          
+          return result;
+        });
+
+        requestList = await GetSentRequestList('ACCEPT');
+      }
+
+      requestList.push(...grantedList);
+      let itemList = requestList;
+      
+      //integrate list to map, with response category
+      let integratedMap = new Map();
+      let authorizedUserList = [];
+      itemList.forEach(e => {
+        //ignore channel invitation request
+        if (e.requestType == 'CHANNEL') return;
+
+        let obj = {
+          'requestId': e.requestId
+        };
+        
+        let key =  authorizedByMe ? e.senderId : e.receiverId;
+        
+        //save same requester requestd asset together
+        if (integratedMap.has(key)) {
+          obj = integratedMap.get(key) || {};
+          let assetList = obj[e.assetName] || [];
+
+          if (assetList.length > 0) {
+            assetList.push(...e.requested);
+          }
+          else {
+            assetList.push(e.requested);
+          }
+
+          obj[e.assetName] = assetList;
+          integratedMap.set(key, obj);
+        }
+        //for new requester
+        else {
+          obj[e.assetName] = e.requested;
+          integratedMap.set(key, obj);
+        }
+
+        //put the user, i authen to on the select list
+        let userInfo = {
+          'name': authorizedByMe ? e.senderName : e.receiverName,
+          'id': authorizedByMe ? e.senderId : e.receiverId
+        };
+
+        if (!authorizedUserList.includes(userInfo)) {
+          authorizedUserList.push(userInfo);
+        }
+
+      });
+    
+      let authorizedMap = new Map();
+      for (const [key, value] of integratedMap.entries()) {
+        let obj = {};
+
+        for (let asset in value) {
+          //ingore request id, it is for revoke api call
+          if (asset == 'requestId') continue;
+
+          let assetIds = value[asset];
+          let assetList = await GetAsset({
+            'assetName': asset,
+            'assetIds': assetIds
+          });
+
+          //add request id to the asset for later revoke action
+          assetList.forEach(e => {
+            e['requestId'] = value['requestId'];
+          });
+
+          obj[asset] = assetList;
+        }
+
+          //classfy record into response record type
+          let grantedRecord = {};
+          _this.definedCategory.forEach(type => {
+            let filtered = obj['Record'].filter(record => record.recordType == type);
+            
+            //save no empty list only
+            if (filtered.length > 0) {
+              grantedRecord[type] = filtered
+            }
+          });
+
+        authorizedMap.set(key, grantedRecord);
+      }
+
+      return {
+        'map': authorizedMap,
+        'users': authorizedUserList
+      };
+    },
+
     async getAllRegistryAsset() {
       try {
         this.$store.commit('setLoading', true);
@@ -456,109 +586,10 @@ export default {
         this.authorizedData = new Map();
         this.loading = true;
   
-        //fetech authorize item
-        let grantedList = await GetAccessRequestList('GRANT').then(result => {
-          //exchange the sender and receiver filed value
-          result.forEach(e => {
-            const {receiverId, receiverName, senderId, senderName} = e;
-            e['receiverId'] = senderId;
-            e['receiverName'] = senderName;
-            e['senderId'] = receiverId;
-            e['senderName'] = receiverName;
-          });
-          
-          return result;
-        });
+        let {map, users} = await this.classifyAuthorizedItem(false);
+        this.authorizeItem = users;
+        this.authorizedData = map;
 
-        let _this = this;
-        let dataMap = await GetSentRequestList('ACCEPT').then(result => {
-
-          // return authorized;
-          let requestList = result || [];
-          requestList.push(...grantedList);
-          
-          let integratedMap = new Map();
-
-          requestList.forEach(e => {
-            //ignore channel invitation request
-            if (e.requestType == 'CHANNEL') return;
-
-            let obj = {
-              'requestId': e.requestId
-            };
-            
-            let key = e.receiverId;
-            
-            //save same requester requestd asset together
-            if (integratedMap.has(key)) {
-              obj = integratedMap.get(key) || {};
-              let assetList = obj[e.assetName] || [];
-
-              if (assetList.length > 0) {
-                assetList.push(...e.requested);
-              }
-              else {
-                assetList.push(e.requested);
-              }
-
-              obj[e.assetName] = assetList;
-              integratedMap.set(key, obj);
-            }
-            //for new requester
-            else {
-              obj[e.assetName] = e.requested;
-              integratedMap.set(key, obj);
-            }
-
-            //put the user, i authen to on the select list
-            let userInfo = {
-              'name': e.receiverName,
-              'id': e.receiverId
-            };
-
-            if (!_this.authorizeItem.includes(userInfo)) {
-              _this.authorizeItem.push(userInfo);
-            }
-
-          });
-
-          return integratedMap;
-        });
-
-        let authorizedMap = dataMap;
-        for (const [key, value] of authorizedMap.entries()) {
-          let obj = {};
-
-          for (let asset in value) {
-            //ingore request id, it is for revoke api call
-            if (asset == 'requestId') continue;
-
-            let assetIds = value[asset];
-            let assetList = await GetAsset({
-              'assetName': asset,
-              'assetIds': assetIds
-            });
-
-
-            obj[asset] = assetList;
-          }
-
-            //classfy record into response record type
-            let authorizedRecord = {};
-            _this.definedCategory.forEach(type => {
-              let filtered = obj['Record'].filter(record => record.recordType == type);
-              
-              //save no empty list only
-              if (filtered.length > 0) {
-                authorizedRecord[type] = filtered
-              }
-            });
-
-
-          _this.authorizedData.set(key, authorizedRecord);
-        }
-
-        // this.authorizeItem = authorizedItems;
         this.loading = false;
 
       }
@@ -597,122 +628,19 @@ export default {
 
     selectAuthorizeData(val) {
       this.selectedAuthorizedUser = val;
-      // this.authorizedData = val.data;
     },
 
     async fetchMyAuthorizedItem() {
       try {
         
-        let _this = this;
-        _this.myAuthorizedAsset.clear();
-        _this.myAuthenAssetLoading = true;
-        _this.myAuthenUserList = [];
+        this.myAuthorizedAsset.clear();
+        this.myAuthenAssetLoading = true;
 
-        //get my granted record
-        let grantedList = await GetSentRequestList('GRANT').then(result => {
-          //exchange the sender and receiver filed value
-          result.forEach(e => {
-            const {receiverId, receiverName, senderId, senderName} = e;
-            e['receiverId'] = senderId;
-            e['receiverName'] = senderName;
-            e['senderId'] = receiverId;
-            e['senderName'] = receiverName;
-          });
+        let {map, users} = await this.classifyAuthorizedItem(true);
+        this.myAuthenUserList = users;
+        this.authorizedAsset = map;
 
-          return result;
-        });
-
-        let authorizedData = await GetAccessRequestList('ACCEPT').then(result => {
-
-          let requestList = result || [];
-          requestList.push(...grantedList);
-          
-          let integratedMap = new Map();
-
-          requestList.forEach(e => {
-            //ignore channel invitation request
-            if (e.requestType == 'CHANNEL') return;
-
-            let obj = {
-              'requestId': e.requestId
-            };
-            
-            let key = e.senderId;
-            
-            //save same requester requestd asset together
-            if (integratedMap.has(key)) {
-              obj = integratedMap.get(key) || {};
-              let assetList = obj[e.assetName] || [];
-
-              if (assetList.length > 0) {
-                assetList.push(...e.requested);
-              }
-              else {
-                assetList.push(e.requested);
-              }
-
-              obj[e.assetName] = assetList;
-              integratedMap.set(key, obj);
-            }
-            //for new requester
-            else {
-              obj[e.assetName] = e.requested;
-              integratedMap.set(key, obj);
-            }
-
-            //put the user, i authen to on the select list
-            let userInfo = {
-              'name': e.senderName,
-              'id': e.senderId
-            };
-
-            if (!_this.myAuthenUserList.includes(userInfo)) {
-              _this.myAuthenUserList.push(userInfo);
-            }
-
-          });
-
-          return integratedMap;
-
-        });
-        
-        let authorizedMap = authorizedData;
-        for (const [key, value] of authorizedMap.entries()) {
-          let obj = {};
-
-          for (let asset in value) {
-            //ingore request id, it is for revoke api call
-            if (asset == 'requestId') continue;
-
-            let assetIds = value[asset];
-            let assetList = await GetAsset({
-              'assetName': asset,
-              'assetIds': assetIds
-            });
-
-            //add request id to the asset for later revoke action
-            assetList.forEach(e => {
-              e['requestId'] = value['requestId'];
-            });
-
-            obj[asset] = assetList;
-          }
-
-            //classfy record into response record type
-            let grantedRecord = {};
-            _this.definedCategory.forEach(type => {
-              let filtered = obj['Record'].filter(record => record.recordType == type);
-              
-              //save no empty list only
-              if (filtered.length > 0) {
-                grantedRecord[type] = filtered
-              }
-            });
-
-          _this.authorizedAsset.set(key, grantedRecord);
-        }
-
-        _this.myAuthenAssetLoading = false;
+        this.myAuthenAssetLoading = false;
 
       }
       catch (error) {
