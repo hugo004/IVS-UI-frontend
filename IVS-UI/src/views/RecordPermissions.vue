@@ -30,7 +30,7 @@
             <v-select 
               :items="authorizeItem"
               itemText="name"
-              label="Authorize people"
+              label="Authorize From"
               color="black--text white"
               :loading="loading"
               solo
